@@ -1,8 +1,7 @@
-<script setup lang="ts">
+<script setup >
 const route = useRoute();
 
-const routeParams = route.params;
-const id =ref('')
+
 
 onMounted(() => {
   console.log('Product',route.params);

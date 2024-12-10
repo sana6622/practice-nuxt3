@@ -1,4 +1,11 @@
-<script setup lang="ts"></script>
+<script setup>
+console.log("middleware之前");
+definePageMeta({
+  // middleware: "middleware-one",
+   middleware: ["middleware-one","middleware-two"],
+});
+console.log("middleware之後");
+</script>
 
 <template>
   <div>

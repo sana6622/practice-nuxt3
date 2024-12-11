@@ -13,7 +13,9 @@
     "nuxt": "^3.14.1592",
     "sweetalert2": "^11.14.5",
     "vue": "latest",
-    "vue-router": "latest"
+    "vue-loading-overlay": "^6.0.6",
+    "vue-router": "latest",
+    "vue3-colorpicker": "^2.3.0"
   },
   "devDependencies": {
     "sass": "^1.81.0"

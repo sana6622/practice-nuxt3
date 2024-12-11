@@ -1,5 +1,4 @@
 <script setup>
-const { $showAlert } = useNuxtApp();
 
 definePageMeta({
   layout: "admin-layout",
@@ -39,10 +38,13 @@ const route = useRoute();
 const routeParams = route.params;
 const id =ref('')
 
+const { $showAlert } = useNuxtApp();
+const text = ref('')
+
 </script>
 
 <template>
-  <div>
+  <div class="about">
     <h1>{{ title }}</h1>
     <p>現在的計數器值：{{ count }}</p>
     <button @click="increment">+</button>
@@ -57,4 +59,22 @@ const id =ref('')
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.about {
+  .copy{
+    padding: 10px;
+    background-color: pink;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .text{
+    padding: 10px;
+    border:1px solid blue;
+    .text-area{
+      background-color: plum;
+    }
+
+  }
+}
+
+</style>

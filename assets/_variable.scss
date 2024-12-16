@@ -1,0 +1,73 @@
+// Color
+/*
+  命名原則:
+  1.原始顏色 ex: black
+  2.light ex: black-light (淺)
+  3.dark ex: black-dark (深)
+  4.更深 or 更淺 black-light-1, black-dark-1 以此類推...
+*/
+
+$primary-green: #5bb49f;
+$sub-green: #ecf6f4;
+$text-black: #2e2e2e;
+$text-white: #ffffff;
+$text-gray: #5e5e5e;
+$text-gray-1: #777777;
+
+$button-bg-white: #fafbff;
+$button-bg-white-hover: #ecf6f4;
+$button-bg-primary-hover: #31716d;
+
+$block-bg-green: #ecf6f5;
+$block-bg-green-hover: #2e5c56;
+
+$warn-red: #da6c6c;
+
+// pagination
+$color-pagination-hover: rgba(73, 84, 105, 1);
+
+// size
+$size-s: 0.75rem; //12px
+$size-base: 0.875rem; //14px
+$size-m: 1.125rem; //18px
+$size-l: 1.25rem; //20px
+$size-xl: 1.5rem; //24px
+$size-xxl: 1.75rem; //28px
+
+
+// RWD
+// 在寬度1366px以下時的CSS樣式
+@mixin winodw {
+  @media (max-width: 1366px) {
+    @content;
+  }
+}
+
+// 在寬度1024px以下時的CSS樣式
+@mixin screen {
+  @media (max-width: 1024px) {
+    @content;
+  }
+}
+// 在寬度768px以下時的CSS樣式
+@mixin pad {
+  @media (max-width: 768px) {
+    @content;
+  }
+}
+// 在寬度375px以下時的CSS樣式
+@mixin mobile {
+  @media (max-width: 393px) {
+    @content;
+  }
+}
+
+// Animation
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

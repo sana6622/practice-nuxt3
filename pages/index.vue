@@ -21,6 +21,6 @@ console.log("middleware之後");
 $primary: blue;
 h1 {
   color: $primary;
-  font-size: $fs-xl;
+  
 }
 </style>

@@ -2,7 +2,7 @@
 
 <template>
   <div>
-    <header>預設模板的表頭</header>
+    <Header></Header>
     <slot />
     <footer>預設模板的表尾</footer>
   </div>

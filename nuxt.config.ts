@@ -1,21 +1,22 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from "nuxt/config";
+import type { NuxtConfig } from "nuxt/schema";
+
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   app: {
     head: {
       title: "Nuxt project",
-
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
         { name: "description", content: "My Nuxt web" },
         /*分享設定*/
-        { property: "og:title", content: "Nuxt3 Day11  Global head 練習" },
+        { property: "og:title", content: "Nuxt3 Day11 Global head 練習" },
         { property: "og:url", content: "http://localhost:3000/" },
         {
           property: "og:description",
-          content: "透過今天的學習，將會學習到 Nuxt3  Global head  的設定方法",
+          content: "透過今天的學習，將會學習到 Nuxt3 Global head 的設定方法",
         },
         {
           property: "og:image",
@@ -25,7 +26,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
-        /*文字*/
+
+        /*文字設定*/
         { rel: "preconnect", href: "https://fonts.googleapis.com" },
         {
           rel: "preconnect",
@@ -40,26 +42,21 @@ export default defineNuxtConfig({
     },
   },
   modules: ["@pinia/nuxt", "@vee-validate/nuxt"],
+  css: ["@/assets/all.scss"],
+
   veeValidate: {
-    // 修改 VeeValidate 元件的名稱
     componentNames: {
       Form: "VForm",
       Field: "VField",
       ErrorMessage: "VErrorMessage",
     },
   },
-  css: ["@/assets/all.scss"],
-
-  // 在全部的元件都引入 _variables.scss
-  // vite: {
-  //   css: {
-  //     preprocessorOptions: {
-  //       scss: {
-  //         additionalData: `
-  //           @import "@/assets/stylesheets/_variables.scss";
-  //         `,
-  //       },
-  //     },
-  //   },
-  // },
+} as NuxtConfig & {
+  veeValidate: {
+    componentNames: {
+      Form: string;
+      Field: string;
+      ErrorMessage: string;
+    };
+  };
 });

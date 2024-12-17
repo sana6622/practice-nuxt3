@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "nuxt": "^3.14.1592",
+    "nuxt-swiper": "^2.0.0",
     "sass": "^1.81.0"
   }
 }

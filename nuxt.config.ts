@@ -41,7 +41,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-  modules: ["@pinia/nuxt", "@vee-validate/nuxt"],
+  modules: ["@pinia/nuxt", "@vee-validate/nuxt", "nuxt-swiper"],
   css: ["@/assets/all.scss"],
 
   veeValidate: {

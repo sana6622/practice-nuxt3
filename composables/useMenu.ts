@@ -15,8 +15,20 @@ export const useMenu = () => {
           link: "/action/laodingAct",
         },
         {
-          subTitle: "pinia-toto...",
-          link: "/action/pinia-todo",
+          subTitle: "pinia-todo...",
+          link: "/action/piniaTodo",
+        },
+        {
+          subTitle: "veeValidate",
+          link: "/action/veeValidate",
+        },
+        {
+          subTitle: "原生Swiper",
+          link: "/action/useSwiper",
+        },
+        {
+          subTitle: "組件寫法Swiper",
+          link: "/action/useSwiper1",
         },
       ],
     },

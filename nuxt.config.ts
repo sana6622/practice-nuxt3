@@ -44,6 +44,8 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "@vee-validate/nuxt", "nuxt-swiper"],
   css: ["@/assets/all.scss"],
 
+  plugins: ["~/plugins/formatDatePlugin.js"],
+
   veeValidate: {
     componentNames: {
       Form: "VForm",

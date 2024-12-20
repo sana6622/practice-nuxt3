@@ -30,6 +30,14 @@ export const useMenu = () => {
           subTitle: "組件寫法Swiper",
           link: "/action/useSwiper1",
         },
+        {
+          subTitle: "日曆",
+          link: "/action/vCalendar",
+        },
+        {
+          subTitle: "日期格式化",
+          link: "/action/formatDate",
+        },
       ],
     },
   ]);

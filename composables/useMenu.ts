@@ -38,6 +38,14 @@ export const useMenu = () => {
           subTitle: "日期格式化",
           link: "/action/formatDate",
         },
+        {
+          subTitle: "驗證",
+          link: "/action/veeValidate",
+        },
+        {
+          subTitle: "sweetAlert",
+          link: "/action/sweetAlert",
+        },
       ],
     },
   ]);

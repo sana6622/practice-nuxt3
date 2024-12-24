@@ -4,7 +4,7 @@
   <div>
     <Header></Header>
     <slot />
-    <footer>預設模板的表尾</footer>
+    <Footer>預設模板的表尾</Footer>
   </div>
 </template>
 

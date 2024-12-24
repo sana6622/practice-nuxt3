@@ -46,6 +46,10 @@ export const useMenu = () => {
           subTitle: "sweetAlert",
           link: "/action/sweetAlert",
         },
+        {
+          subTitle: "element",
+          link: "/ElementPage/elements",
+        },
       ],
     },
   ]);

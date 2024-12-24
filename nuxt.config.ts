@@ -41,10 +41,10 @@ export default defineNuxtConfig({
       ],
     },
   },
-  modules: ["@pinia/nuxt", "@vee-validate/nuxt", "nuxt-swiper"],
+  modules: ["@pinia/nuxt", "@vee-validate/nuxt", "nuxt-swiper","@element-plus/nuxt"],
   css: ["@/assets/all.scss"],
 
-  plugins: ["~/plugins/formatDatePlugin.js"],
+  plugins: ["~/plugins/formatDatePlugin.js", "~/plugins/element-plus.js",],
 
   veeValidate: {
     componentNames: {

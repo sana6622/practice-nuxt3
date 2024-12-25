@@ -1,6 +1,7 @@
 export const useMenu = () => {
   const menu = ref([
     { title: "about", link: "/about" },
+    {title:"ElementPage",link:"/elementPage"},
     {
       title: "功能",
       link: "/action",
@@ -46,9 +47,10 @@ export const useMenu = () => {
           subTitle: "sweetAlert",
           link: "/action/sweetAlert",
         },
+       
         {
-          subTitle: "element",
-          link: "/ElementPage/elements",
+          subTitle: "NuxtIcon",
+          link: "/action/NuxtIcon",
         },
       ],
     },

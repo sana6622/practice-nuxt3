@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-
+import { zhTW } from "date-fns/locale";
 
 export default defineNuxtPlugin((nuxtApp) => {
   // 日期格式化工具函式
@@ -13,7 +13,9 @@ export default defineNuxtPlugin((nuxtApp) => {
         return format(date, 'MM/dd'); // 手機格式
       } else if (type === 'iso') {
         return format(date, 'yyyy-MM-dd'); // ISO 格式
-      }  else {
+      } else if (type === 'isoWidthDay') {
+        return format(date, 'yyyy-MM-dd (EEEE)', { locale: zhTW }); // 手機格式+星期
+      } else {
         return format(date, 'yyyy/MM/dd'); // 默認格式
       }
     } catch (error) {

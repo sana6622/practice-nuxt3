@@ -1,24 +1,23 @@
 <script setup>
 const todoStore = usetodoStore();
 // actions 的方法可以直接解構
-const {addtodo, removetodo } = todoStore;
+const { addtodo, removetodo } = todoStore;
 
 // state 資料和 getters 具有響應性，需經過 storeToRefs 解構
 const { todoList, todoQuantity } = storeToRefs(todoStore);
 
 const newtodo = ref("");
 
-const addNewtodo = () =>{
+const addNewtodo = () => {
   if (newtodo.value) {
     addtodo(newtodo.value);
     newtodo.value = "";
   }
-}
+};
 
-const deletetodo = (id) =>{
+const deletetodo = (id) => {
   removetodo(id);
-}
-
+};
 </script>
 
 <template>
@@ -59,7 +58,7 @@ const deletetodo = (id) =>{
       </div>
     </div>
 
-  <div class="hit">
+    <div class="hit">
       <p>使用檔案: stores/todo.js</p>
       <p>使用技巧: plugin 整合vue3插件 -> .component() , .use()</p>
     </div>

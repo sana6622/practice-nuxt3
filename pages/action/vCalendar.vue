@@ -1,5 +1,5 @@
 <script setup>
-const date = ref("");
+const date = ref(new Date());
 const dateRange = ref({
   start: new Date(2024, 11, 24),
   end: new Date(2024, 11, 26),
@@ -17,7 +17,7 @@ const weekNumber = ref(2); //顯示 周一
   <div>
     <h1>VCalendar套件</h1>
     <div>
-      <h2>顯示日期</h2>
+      <h2>只顯示日曆</h2>
       <VCalendar />
     </div>
     <div>
@@ -28,6 +28,7 @@ const weekNumber = ref(2); //顯示 周一
 
     <div>
       <h2>選擇區間</h2>
+      <h3>起始日是今天</h3>
       <VDatePicker v-model="dateRange" is-range />
       <p>起始日 : {{ dateRange.start }}</p>
       <p>結束日:{{ dateRange.end }}</p>

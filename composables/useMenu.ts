@@ -7,6 +7,8 @@ export const useMenu = () => {
       link: "/action",
       sub: [
         { subTitle: "轉換大小寫", link: "/action/changeWord" },
+        { subTitle: "複製文字", link: "/action/copyWord" },
+        {subTitle:"plugin proved使用" , link:"/action/pluginProvider"},
         {
           subTitle: "顏色選擇器",
           link: "/action/colorPicker",
@@ -49,8 +51,8 @@ export const useMenu = () => {
         },
        
         {
-          subTitle: "NuxtIcon",
-          link: "/action/NuxtIcon",
+          subTitle: "nuxtIcon",
+          link: "/action/nuxtIcon",
         },
       ],
     },

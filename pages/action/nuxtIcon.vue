@@ -6,7 +6,7 @@ const clickHandler = () => {
 };
 
 const customizeStar = (content, name, prefix, provider) => {
-  console.log("Customize123 called with:", { content, name, prefix, provider });
+  // console.log("Customize123 called with:", { content, name, prefix, provider });
   // if (prefix !== "tabler") return content; // Ignore Prefix
 
   return content

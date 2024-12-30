@@ -2,6 +2,11 @@ export const useMenu = () => {
   const menu = ref([
     { title: "about", link: "/about" },
     {title:"ElementPage",link:"/elementPage"},
+    {title:"d3",link:"d3",
+      sub:[{subTitle:"直條圖",link:"/d3/barChart"},
+      {subTitle:"直縣轄市地圖-基本功能",link:"/d3/mapBasicCity"},
+      {subTitle:"直縣轄市地圖-互動功能",link:"/d3/mapCity"},
+      {subTitle:"村里地圖",link:"/d3/mapCountry"}]},
     {
       title: "功能",
       link: "/action",
@@ -54,6 +59,7 @@ export const useMenu = () => {
           subTitle: "nuxtIcon",
           link: "/action/nuxtIcon",
         },
+
       ],
     },
   ]);

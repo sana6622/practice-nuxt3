@@ -104,6 +104,9 @@ const signInUser = async (body) => {
         登入
       </button>
     </form>
+
+    <p>註冊資料只保留一天，過期需重新註冊</p>
+    <h3><nuxt-link to="register">註冊頁</nuxt-link></h3>
   </div>
 </template>
 

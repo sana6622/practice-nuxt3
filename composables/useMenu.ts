@@ -6,6 +6,7 @@ export const useMenu = () => {
       sub:[{subTitle:"直條圖",link:"/d3/barChart"},
       {subTitle:"直縣轄市地圖-基本功能",link:"/d3/mapBasicCity"},
       {subTitle:"直縣轄市地圖-互動功能",link:"/d3/mapCity"},
+      {subTitle:"鄉鎮市區地圖-基本功能",link:"/d3/mapBasicTown"},
       {subTitle:"鄉鎮市區地圖",link:"/d3/mapTown"},
       {subTitle:"村里地圖",link:"/d3/mapVillage"}]},
     {

@@ -105,14 +105,21 @@ const dynamicHighlightData = ref({
 const regions = [
   {
     region: "連江縣",
-    class: "lienchiang-town-boundary",
+    class: ".lienchiang-town-boundary",
     typeName: "COUNTYNAME",
   },
-  { region: "金門縣", class: "kinmen-town-boundary", typeName: "COUNTYNAME" },
-  { region: "澎湖縣", class: "penghu-town-boundary", typeName: "COUNTYNAME" },
-  { region: "琉球鄉", class: "lanyu-town-boundary", typeName: "TOWNNAME" },
-  { region: "綠島鄉", class: "green-island-boundary", typeName: "TOWNNAME" },
-  { region: "蘭嶼鄉", class: "lanyu-town-boundary", typeName: "TOWNNAME" },
+  { region: "金門縣", class: ".kinmen-town-boundary", typeName: "COUNTYNAME" },
+  { region: "澎湖縣", class: ".penghu-town-boundary", typeName: "COUNTYNAME" },
+  {
+    region: "琉球鄉",
+    class: ".xiaoliuqiu-town-boundary",
+    typeName: "TOWNNAME",
+  },
+  {
+    region: "臺東縣",
+    class: ".green-island-boundary,.lanyu-town-boundary",
+    typeName: "COUNTYNAME",
+  },
 ];
 
 // 初始化地圖，將標亮地區設為橘色
@@ -177,6 +184,8 @@ const initializeMap = () => {
 
 // 滑鼠移入時，將該縣市標亮區域設為深綠
 const handleMouseOver = (region) => {
+  //還原離島樣式
+  clearMouseOverStyles();
   // 移除目前選中的地區樣式
   if (selectedRegion.value) {
     d3.select(mapContainer.value)
@@ -228,18 +237,18 @@ const handleMouseOut = (region) => {
 };
 
 // 滑鼠移入，連江縣
-const handleMouseOverLienchiang = (region) => {
-  d3.select(mapContainer.value)
-    .selectAll(".lienchiang-town-boundary")
-    .filter((d) => d.properties.COUNTYNAME === region)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value[region] || [];
-      // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
-      return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
-    })
-    .attr("stroke", "none"); // 邊框顏色也改變為深綠
-};
+// const handleMouseOverLienchiang = (region) => {
+//   d3.select(mapContainer.value)
+//     .selectAll(".lienchiang-town-boundary")
+//     .filter((d) => d.properties.COUNTYNAME === region)
+//     .attr("fill", (d) => {
+//       const townName = d.properties.TOWNNAME;
+//       const highlightTowns = dynamicHighlightData.value[region] || [];
+//       // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
+//       return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
+//     })
+//     .attr("stroke", "none"); // 邊框顏色也改變為深綠
+// };
 
 // 滑鼠移出，連江縣
 // const handleMouseOutLienchiang = (region) => {
@@ -257,19 +266,19 @@ const handleMouseOverLienchiang = (region) => {
 // };
 
 // 滑鼠移入，金門縣
-const handleMouseOverKinmen = (region) => {
-  clearMouseOverStyles();
-  d3.select(mapContainer.value)
-    .selectAll(".kinmen-town-boundary")
-    .filter((d) => d.properties.COUNTYNAME === region)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value[region] || [];
-      // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
-      return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
-    })
-    .attr("stroke", "none"); // 邊框顏色也改變為深綠
-};
+// const handleMouseOverKinmen = (region) => {
+//   clearMouseOverStyles();
+//   d3.select(mapContainer.value)
+//     .selectAll(".kinmen-town-boundary")
+//     .filter((d) => d.properties.COUNTYNAME === region)
+//     .attr("fill", (d) => {
+//       const townName = d.properties.TOWNNAME;
+//       const highlightTowns = dynamicHighlightData.value[region] || [];
+//       // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
+//       return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
+//     })
+//     .attr("stroke", "none"); // 邊框顏色也改變為深綠
+// };
 
 // 滑鼠移出，金門縣
 // const handleMouseOutKinmen = (region) => {
@@ -286,18 +295,18 @@ const handleMouseOverKinmen = (region) => {
 // };
 
 // 滑鼠移入，澎湖縣
-const handleMouseOverPenghu = (region) => {
-  d3.select(mapContainer.value)
-    .selectAll(".penghu-town-boundary")
-    .filter((d) => d.properties.COUNTYNAME === region)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value[region] || [];
-      // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
-      return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
-    })
-    .attr("stroke", "none"); // 邊框顏色也改變為深綠
-};
+// const handleMouseOverPenghu = (region) => {
+//   d3.select(mapContainer.value)
+//     .selectAll(".penghu-town-boundary")
+//     .filter((d) => d.properties.COUNTYNAME === region)
+//     .attr("fill", (d) => {
+//       const townName = d.properties.TOWNNAME;
+//       const highlightTowns = dynamicHighlightData.value[region] || [];
+//       // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
+//       return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
+//     })
+//     .attr("stroke", "none"); // 邊框顏色也改變為深綠
+// };
 
 // 滑鼠移出，澎湖縣
 // const handleMouseOutPenghu = (region) => {
@@ -313,16 +322,16 @@ const handleMouseOverPenghu = (region) => {
 //     .attr("stroke", "none");
 // };
 
-// 滑鼠移入， 琉球縣
-const handleMouseOverXiaoliuqiu = (region) => {
-  d3.select(mapContainer.value)
-    .selectAll(".xiaoliuqiu-town-boundary")
-    .filter((d) => d.properties.TOWNNAME === region)
-    .attr("fill", "#2e5c56") // 新顏色
-    .attr("stroke", "#fff");
-};
+// 滑鼠移入， 琉球
+// const handleMouseOverXiaoliuqiu = (region) => {
+//   d3.select(mapContainer.value)
+//     .selectAll(".xiaoliuqiu-town-boundary")
+//     .filter((d) => d.properties.TOWNNAME === region)
+//     .attr("fill", "#2e5c56")
+//     .attr("stroke", "none");
+// };
 
-// 滑鼠移出，琉球縣
+// 滑鼠移出，琉球
 // const handleMouseOutXiaoliuqiu = (region) => {
 //   d3.select(mapContainer.value)
 //     .selectAll(".xiaoliuqiu-town-boundary")
@@ -336,18 +345,18 @@ const handleMouseOverXiaoliuqiu = (region) => {
 // };
 
 // 滑鼠移入，臺東(蘭嶼綠島)
-const handleMouseOverTaitungIsland = (region) => {
-  d3.select(mapContainer.value)
-    .selectAll(".green-island-boundary,.lanyu-town-boundary")
-    .filter((d) => d.properties.COUNTYNAME === region)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value[region] || [];
-      // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
-      return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
-    })
-    .attr("stroke", "none"); // 邊框顏色也改變為深綠
-};
+// const handleMouseOverTaitungIsland = (region) => {
+//   d3.select(mapContainer.value)
+//     .selectAll(".green-island-boundary,.lanyu-town-boundary")
+//     .filter((d) => d.properties.COUNTYNAME === region)
+//     .attr("fill", (d) => {
+//       const townName = d.properties.TOWNNAME;
+//       const highlightTowns = dynamicHighlightData.value[region] || [];
+//       // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
+//       return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
+//     })
+//     .attr("stroke", "none"); // 邊框顏色也改變為深綠
+// };
 
 // 滑鼠移出，臺東(蘭嶼綠島)
 // const handleMouseOutTaitungIsland = (region) => {
@@ -367,7 +376,7 @@ const handleMouseOverTaitungIsland = (region) => {
 const handleMouseOutRegion = (region) => {
   const regionInfo = regions.find((item) => item.region === region);
   d3.select(mapContainer.value)
-    .selectAll(`.${regionInfo.class}`)
+    .selectAll(`${regionInfo.class}`)
     .filter((d) => d.properties[regionInfo.typeName] === region)
     .attr("fill", (d) => {
       const townName = d.properties.TOWNNAME;
@@ -378,9 +387,26 @@ const handleMouseOutRegion = (region) => {
     .attr("stroke", "none");
 };
 
+//滑鼠移入(離島)
+const handleMouseOverRegion = (region) => {
+  clearMouseOverStyles();
+  const regionInfo = regions.find((item) => item.region === region);
+
+  d3.select(mapContainer.value)
+    .selectAll(`${regionInfo.class}`)
+    .filter((d) => d.properties[regionInfo.typeName] === region)
+    .attr("fill", (d) => {
+      const townName = d.properties.TOWNNAME;
+      const highlightTowns = dynamicHighlightData.value[region] || [];
+      // 如果該地區原本是標亮的，改變為新顏色（例如深綠色）
+      return highlightTowns.includes(townName) ? "#2e5c56" : "#dedede";
+    })
+    .attr("stroke", "none"); // 邊框顏色也改變為深綠
+};
+
 // 顯示特定縣市和鄉鎮市區
 const highlightRegion = (region) => {
-  // 先還原所有區域樣式
+  // 還原本島區域樣式
   d3.select(mapContainer.value)
     .selectAll(".town-boundary")
     .attr("fill", (d) => {
@@ -402,19 +428,108 @@ const updateHighlightByCity = (city) => {
   selectedRegion.value = city;
 
   highlightRegion(city);
-  if (city === "金門縣") {
-    handleMouseOverKinmen("金門縣");
-  } else if (city === "連江縣") {
-    handleMouseOverLienchiang("連江縣");
+  if (city === "綠島和蘭嶼") {
+    handleMouseOverRegion("臺東縣");
+  } else if (
+    city === "金門縣" ||
+    city === "連江縣" ||
+    city === "澎湖縣" ||
+    city === "琉球鄉"
+  ) {
+    handleMouseOverRegion(city);
+  } else {
+    handleMouseOver(city);
   }
+
   // 觸發 mouseOver 樣式
-  handleMouseOver(city);
+  // handleMouseOver(city);
 };
 
 const clearMouseOverStyles = () => {
   regions.forEach((item) => {
     handleMouseOutRegion(item.region);
   });
+};
+
+const drawIsland = (svg, townGeo, dynamicHighlightData, options) => {
+  const {
+    region,
+    hoverRegion,
+    groupClass,
+    borderClass,
+    boundaryClass,
+    labelClass,
+    labelText,
+    projectionConfig,
+    position,
+    customBorderPath,
+    typeName,
+  } = options;
+
+  const projectionIsland = d3
+    .geoMercator()
+    .scale(projectionConfig.scale)
+    .center(projectionConfig.center)
+    .translate(projectionConfig.translate);
+
+  const pathIsland = d3.geoPath().projection(projectionIsland);
+
+  const islandGroup = svg
+    .append("g")
+    .attr("class", groupClass)
+    .attr("transform", `translate(${position.x}, ${position.y})`);
+  //邊框
+  if (customBorderPath) {
+    islandGroup
+      .append("path")
+      .attr("class", borderClass)
+      .attr("d", customBorderPath) // 套用自訂路徑
+      .attr("fill", "none")
+      .attr("stroke", "#5BB49F")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .on("mouseenter", () => handleMouseOverRegion(hoverRegion))
+      .on("mouseleave", () => handleMouseOutRegion(hoverRegion));
+  } else {
+    islandGroup
+      .append("rect")
+      .attr("class", borderClass)
+      .attr("width", projectionConfig.width)
+      .attr("height", projectionConfig.height)
+      .attr("fill", "none")
+      .attr("stroke", "#5BB49F")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", "5,5")
+      .on("mouseenter", () => handleMouseOverRegion(hoverRegion))
+      .on("mouseleave", () => handleMouseOutRegion(hoverRegion));
+  }
+
+  islandGroup
+    .selectAll(`.${boundaryClass}`)
+    .data(townGeo.features.filter((d) => d.properties[typeName] === region))
+    .enter()
+    .append("path")
+    .attr("class", boundaryClass)
+    .attr("d", pathIsland)
+    .attr("fill", (d) => {
+      const townName = d.properties.TOWNNAME;
+      const highlightTowns = dynamicHighlightData.value[region] || [];
+      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+    })
+    .attr("stroke", "none")
+    .on("mouseenter", () => handleMouseOverRegion(hoverRegion))
+    .on("mouseleave", () => handleMouseOutRegion(hoverRegion));
+
+  islandGroup
+    .append("text")
+    .attr("class", labelClass)
+    .attr("x", projectionConfig.labelX)
+    .attr("y", projectionConfig.labelY)
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "middle")
+    .attr("font-size", "14px")
+    .attr("fill", "#7d7d7d")
+    .text(labelText);
 };
 
 onMounted(async () => {
@@ -560,366 +675,494 @@ onMounted(async () => {
     });
 
   //連江縣
-  const projectionLienchiang = d3
-    .geoMercator()
-    .scale(15000) // 調整比例尺
-    .center([119.95, 26.2]) // 連江縣（馬祖）中心點
-    .translate([50, 70]); // 地圖放置位置
+  // const projectionLienchiang = d3
+  //   .geoMercator()
+  //   .scale(15000) // 調整比例尺
+  //   .center([119.95, 26.2]) // 連江縣（馬祖）中心點
+  //   .translate([50, 70]); // 地圖放置位置
 
-  const pathLienchiang = d3.geoPath().projection(projectionLienchiang);
+  // const pathLienchiang = d3.geoPath().projection(projectionLienchiang);
 
-  const lienchiangGroup = svg
-    .append("g")
-    .attr("class", "lienchiang-group")
-    .attr("transform", `translate(0, 0)`); // 框框位置調整
+  // const lienchiangGroup = svg
+  //   .append("g")
+  //   .attr("class", "lienchiang-group")
+  //   .attr("transform", `translate(0, 0)`); // 框框位置調整
 
-  // 連江縣框框
-  lienchiangGroup
-    .append("rect")
-    .attr("class", "lienchiang-border")
-    .attr("width", 200)
-    .attr("height", 200)
-    .attr("fill", "none")
-    .attr("stroke", "#5BB49F")
-    .attr("stroke-width", 2)
-    .attr("stroke-dasharray", "5,5")
-    .on("mouseenter", () => handleMouseOverLienchiang("連江縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("連江縣")); // 滑鼠移出時恢復顏色
+  // // 連江縣框框
+  // lienchiangGroup
+  //   .append("rect")
+  //   .attr("class", "lienchiang-border")
+  //   .attr("width", 200)
+  //   .attr("height", 200)
+  //   .attr("fill", "none")
+  //   .attr("stroke", "#5BB49F")
+  //   .attr("stroke-width", 2)
+  //   .attr("stroke-dasharray", "5,5")
+  //   .on("mouseenter", () => handleMouseOverRegion("連江縣"))
+  //   .on("mouseleave", () => handleMouseOutRegion("連江縣"));
 
-  // 繪製連江縣地圖
-  lienchiangGroup
-    .selectAll(".lienchiang-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.COUNTYNAME === "連江縣"))
-    .enter()
-    .append("path")
-    .attr("class", "lienchiang-town-boundary")
-    .attr("d", pathLienchiang)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["連江縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
-    })
-    .attr("stroke", "none")
-    .attr("stroke-width", 1)
-    .on("mouseenter", () => handleMouseOverLienchiang("連江縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("連江縣")); // 滑鼠移出時恢復顏色
+  // // 繪製連江縣地圖
+  // lienchiangGroup
+  //   .selectAll(".lienchiang-town-boundary")
+  //   .data(townGeo.features.filter((d) => d.properties.COUNTYNAME === "連江縣"))
+  //   .enter()
+  //   .append("path")
+  //   .attr("class", "lienchiang-town-boundary")
+  //   .attr("d", pathLienchiang)
+  //   .attr("fill", (d) => {
+  //     const townName = d.properties.TOWNNAME;
+  //     const highlightTowns = dynamicHighlightData.value["連江縣"] || [];
+  //     return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+  //   })
+  //   .attr("stroke", "none")
+  //   .attr("stroke-width", 1)
+  //   .on("mouseenter", () => handleMouseOverRegion("連江縣"))
+  //   .on("mouseleave", () => handleMouseOutRegion("連江縣"));
 
-  // 連江縣文字
-  lienchiangGroup
-    .append("text")
-    .attr("class", "lienchiang-label")
-    .attr("x", 75) // 框框內水平居中
-    .attr("y", 175) // 框框底部上方
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "middle")
-    .attr("font-size", "14px")
-    .attr("fill", "#7d7d7d")
-    .text("連江縣(馬祖)");
+  // // 連江縣文字
+  // lienchiangGroup
+  //   .append("text")
+  //   .attr("class", "lienchiang-label")
+  //   .attr("x", 75) // 框框內水平居中
+  //   .attr("y", 175) // 框框底部上方
+  //   .attr("text-anchor", "middle")
+  //   .attr("alignment-baseline", "middle")
+  //   .attr("font-size", "14px")
+  //   .attr("fill", "#7d7d7d")
+  //   .text("連江縣(馬祖)");
 
-  //金門
-  const projectionKinmen = d3
-    .geoMercator()
-    .scale(20000)
-    .center([118.318, 24.43]) // 金門中心點
-    .translate([70, 80]) //地圖放置位置
-    .clipExtent([
-      [0, 0],
-      [700, 300],
-    ]); //指定大小(左上角座標)(右下角座標)
+  // //金門
+  // const projectionKinmen = d3
+  //   .geoMercator()
+  //   .scale(20000)
+  //   .center([118.318, 24.43]) // 金門中心點
+  //   .translate([70, 80]) //地圖放置位置
+  //   .clipExtent([
+  //     [0, 0],
+  //     [700, 300],
+  //   ]); //指定大小(左上角座標)(右下角座標)
 
-  const pathKinmen = d3.geoPath().projection(projectionKinmen);
+  // const pathKinmen = d3.geoPath().projection(projectionKinmen);
 
-  const kinmenGroup = svg
-    .append("g")
-    .attr("class", "kinmen-group")
-    .attr("transform", `translate(0, 220)`); //框縣地圖放置位置
+  // const kinmenGroup = svg
+  //   .append("g")
+  //   .attr("class", "kinmen-group")
+  //   .attr("transform", `translate(0, 220)`); //框縣地圖放置位置
 
-  // 金門添加邊框
-  kinmenGroup
-    .append("rect")
-    .attr("class", "kinmen-border")
-    .attr("width", 150) // 邊框寬度
-    .attr("height", 150) // 邊框高度
-    .attr("fill", "none")
-    .attr("stroke", "#5BB49F") // 邊框顏色
-    .attr("stroke-width", 2)
-    .attr("stroke-dasharray", "5,5") // 設定為虛線，5px 實線，5px 空白
-    .on("mouseenter", () => handleMouseOverKinmen("金門縣"))
-    .on("mouseleave", () => handleMouseOutRegion("金門縣"));
+  // // 金門添加邊框
+  // kinmenGroup
+  //   .append("rect")
+  //   .attr("class", "kinmen-border")
+  //   .attr("width", 150) // 邊框寬度
+  //   .attr("height", 150) // 邊框高度
+  //   .attr("fill", "none")
+  //   .attr("stroke", "#5BB49F") // 邊框顏色
+  //   .attr("stroke-width", 2)
+  //   .attr("stroke-dasharray", "5,5") // 設定為虛線，5px 實線，5px 空白
+  //   .on("mouseenter", () => handleMouseOverRegion("金門縣"))
+  //   .on("mouseleave", () => handleMouseOutRegion("金門縣"));
 
-  // 繪製金門的鄉鎮市區
-  kinmenGroup
-    .selectAll(".kinmen-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.COUNTYNAME === "金門縣"))
-    .enter()
-    .append("path")
-    .attr("class", "kinmen-town-boundary")
-    .attr("d", pathKinmen)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["金門縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
-    })
-    .attr("stroke", "none")
-    .attr("stroke-width", 1)
-    .on("mouseenter", () => handleMouseOverKinmen("金門縣"))
-    .on("mouseleave", () => handleMouseOutRegion("金門縣"));
+  // // 繪製金門的鄉鎮市區
+  // kinmenGroup
+  //   .selectAll(".kinmen-town-boundary")
+  //   .data(townGeo.features.filter((d) => d.properties.COUNTYNAME === "金門縣"))
+  //   .enter()
+  //   .append("path")
+  //   .attr("class", "kinmen-town-boundary")
+  //   .attr("d", pathKinmen)
+  //   .attr("fill", (d) => {
+  //     const townName = d.properties.TOWNNAME;
+  //     const highlightTowns = dynamicHighlightData.value["金門縣"] || [];
+  //     return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+  //   })
+  //   .attr("stroke", "none")
+  //   .attr("stroke-width", 1)
+  //   .on("mouseenter", () => handleMouseOverRegion("金門縣"))
+  //   .on("mouseleave", () => handleMouseOutRegion("金門縣"));
 
-  //金門文字
-  kinmenGroup
-    .append("text")
-    .attr("class", "xiaoliuqiu-label")
-    .attr("x", 75) // 文字水平位置，框框中心
-    .attr("y", 135) // 文字垂直位置，接近框框底部
-    .attr("text-anchor", "middle") // 文字水平居中對齊
-    .attr("alignment-baseline", "middle") // 文字垂直居中對齊
-    .attr("font-size", "14px")
-    .attr("fill", "#7d7d7d") // 字體顏色
-    .text("金門縣"); // 文字內容
+  // //金門文字
+  // kinmenGroup
+  //   .append("text")
+  //   .attr("class", "xiaoliuqiu-label")
+  //   .attr("x", 75) // 文字水平位置，框框中心
+  //   .attr("y", 135) // 文字垂直位置，接近框框底部
+  //   .attr("text-anchor", "middle") // 文字水平居中對齊
+  //   .attr("alignment-baseline", "middle") // 文字垂直居中對齊
+  //   .attr("font-size", "14px")
+  //   .attr("fill", "#7d7d7d") // 字體顏色
+  //   .text("金門縣"); // 文字內容
 
-  //澎湖縣
-  const projectionPenghu = d3
-    .geoMercator()
-    .scale(15000)
-    .center([119.566, 23.571]) // 澎湖縣中心點
-    .translate([80, 70]) //地圖放置位置
-    .clipExtent([
-      [0, 0],
-      [200, 200],
-    ]); //指定大小(左上角座標)(右下角座標)
+  // //澎湖縣
+  // const projectionPenghu = d3
+  //   .geoMercator()
+  //   .scale(15000)
+  //   .center([119.566, 23.571]) // 澎湖縣中心點
+  //   .translate([80, 70]) //地圖放置位置
+  //   .clipExtent([
+  //     [0, 0],
+  //     [200, 200],
+  //   ]); //指定大小(左上角座標)(右下角座標)
 
-  const pathPenghu = d3.geoPath().projection(projectionPenghu);
+  // const pathPenghu = d3.geoPath().projection(projectionPenghu);
 
-  const penghuGroup = svg
-    .append("g")
-    .attr("class", "penghu-group")
-    .attr("transform", `translate(0, ${height - 400})`); //框縣地圖放置位置
+  // const penghuGroup = svg
+  //   .append("g")
+  //   .attr("class", "penghu-group")
+  //   .attr("transform", `translate(0, ${height - 400})`); //框縣地圖放置位置
 
-  // 澎湖縣添加邊框
-  penghuGroup
-    .append("rect")
-    .attr("class", "penghu-border")
-    .attr("width", 150) // 邊框寬度，包含地圖和內邊距
-    .attr("height", 200) // 邊框高度，包含地圖和內邊距
-    .attr("fill", "none") // 無填充
-    .attr("stroke", "#5BB49F") // 邊框顏色
-    .attr("stroke-width", 2) // 邊框線條寬度
-    .attr("stroke-dasharray", "5,5") // 設定為虛線，5px 實線，5px 空白
-    .on("mouseenter", () => handleMouseOverPenghu("澎湖縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("澎湖縣")); // 滑鼠移出時恢復顏色
+  // // 澎湖縣添加邊框
+  // penghuGroup
+  //   .append("rect")
+  //   .attr("class", "penghu-border")
+  //   .attr("width", 150) // 邊框寬度，包含地圖和內邊距
+  //   .attr("height", 200) // 邊框高度，包含地圖和內邊距
+  //   .attr("fill", "none") // 無填充
+  //   .attr("stroke", "#5BB49F") // 邊框顏色
+  //   .attr("stroke-width", 2) // 邊框線條寬度
+  //   .attr("stroke-dasharray", "5,5") // 設定為虛線，5px 實線，5px 空白
+  //   .on("mouseenter", () => handleMouseOverRegion("澎湖縣")) // 滑鼠移入時改變顏色
+  //   .on("mouseleave", () => handleMouseOutRegion("澎湖縣")); // 滑鼠移出時恢復顏色
 
-  // 繪製澎湖縣的鄉鎮市區
-  penghuGroup
-    .selectAll(".penghu-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.COUNTYNAME === "澎湖縣"))
-    .enter()
-    .append("path")
-    .attr("class", "penghu-town-boundary")
-    .attr("d", pathPenghu)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["澎湖縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
-    })
-    .attr("stroke", "none")
-    .attr("stroke-width", 1)
-    .on("mouseenter", () => handleMouseOverPenghu("澎湖縣")) // 確保琉球地圖也會觸發
-    .on("mouseleave", () => handleMouseOutRegion("澎湖縣"));
+  // // 繪製澎湖縣的鄉鎮市區
+  // penghuGroup
+  //   .selectAll(".penghu-town-boundary")
+  //   .data(townGeo.features.filter((d) => d.properties.COUNTYNAME === "澎湖縣"))
+  //   .enter()
+  //   .append("path")
+  //   .attr("class", "penghu-town-boundary")
+  //   .attr("d", pathPenghu)
+  //   .attr("fill", (d) => {
+  //     const townName = d.properties.TOWNNAME;
+  //     const highlightTowns = dynamicHighlightData.value["澎湖縣"] || [];
+  //     return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+  //   })
+  //   .attr("stroke", "none")
+  //   .attr("stroke-width", 1)
+  //   .on("mouseenter", () => handleMouseOverRegion("澎湖縣")) // 確保琉球地圖也會觸發
+  //   .on("mouseleave", () => handleMouseOutRegion("澎湖縣"));
 
-  // 澎湖縣文字
-  penghuGroup
-    .append("text")
-    .attr("class", "penghu-label")
-    .attr("x", 75) // 文字水平位置，框框中心
-    .attr("y", 185) // 文字垂直位置，接近框框底部
-    .attr("text-anchor", "middle") // 文字水平居中對齊
-    .attr("alignment-baseline", "middle") // 文字垂直居中對齊
-    .attr("font-size", "14px") // 字體大小
-    .attr("fill", "#7d7d7d") // 字體顏色
-    .text("澎湖縣"); // 文字內容
+  // // 澎湖縣文字
+  // penghuGroup
+  //   .append("text")
+  //   .attr("class", "penghu-label")
+  //   .attr("x", 75) // 文字水平位置，框框中心
+  //   .attr("y", 185) // 文字垂直位置，接近框框底部
+  //   .attr("text-anchor", "middle") // 文字水平居中對齊
+  //   .attr("alignment-baseline", "middle") // 文字垂直居中對齊
+  //   .attr("font-size", "14px") // 字體大小
+  //   .attr("fill", "#7d7d7d") // 字體顏色
+  //   .text("澎湖縣"); // 文字內容
 
-  //琉球鄉
-  const projectionXiaoliuqiu = d3
-    .geoMercator()
-    .scale(80000)
-    .center([120.371, 22.345]) // 琉球鄉中心點
-    .translate([80, 70]) //地圖放置位置
-    .clipExtent([
-      [0, 0],
-      [200, 200],
-    ]); //指定大小(左上角座標)(右下角座標)
+  // //琉球鄉
+  // const projectionXiaoliuqiu = d3
+  //   .geoMercator()
+  //   .scale(80000)
+  //   .center([120.371, 22.345]) // 琉球鄉中心點
+  //   .translate([80, 70]) //地圖放置位置
+  //   .clipExtent([
+  //     [0, 0],
+  //     [200, 200],
+  //   ]); //指定大小(左上角座標)(右下角座標)
 
-  const pathXiaoliuqiu = d3.geoPath().projection(projectionXiaoliuqiu);
+  // const pathXiaoliuqiu = d3.geoPath().projection(projectionXiaoliuqiu);
 
-  const xiaoliuqiuGroup = svg
-    .append("g")
-    .attr("class", "xiaoliuqiu-group")
-    .attr("transform", `translate(0, ${height - 150})`); //框縣地圖放置位置
+  // const xiaoliuqiuGroup = svg
+  //   .append("g")
+  //   .attr("class", "xiaoliuqiu-group")
+  //   .attr("transform", `translate(0, ${height - 150})`); //框縣地圖放置位置
 
-  // 琉球鄉添加邊框
-  xiaoliuqiuGroup
-    .append("rect")
-    .attr("class", "xiaoliuqiu-border")
-    .attr("width", 150) // 邊框寬度，包含地圖和內邊距
-    .attr("height", 150) // 邊框高度，包含地圖和內邊距
-    .attr("fill", "none") // 無填充
-    .attr("stroke", "#5BB49F") // 邊框顏色
-    .attr("stroke-width", 2) // 邊框線條寬度
-    .attr("stroke-dasharray", "5,5") // 設定為虛線，5px 實線，5px 空白
-    .on("mouseenter", () => handleMouseOverXiaoliuqiu("琉球鄉")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("琉球鄉")); // 滑鼠移出時恢復顏色
+  // // 琉球鄉添加邊框
+  // xiaoliuqiuGroup
+  //   .append("rect")
+  //   .attr("class", "xiaoliuqiu-border")
+  //   .attr("width", 150) // 邊框寬度，包含地圖和內邊距
+  //   .attr("height", 150) // 邊框高度，包含地圖和內邊距
+  //   .attr("fill", "none") // 無填充
+  //   .attr("stroke", "#5BB49F") // 邊框顏色
+  //   .attr("stroke-width", 2) // 邊框線條寬度
+  //   .attr("stroke-dasharray", "5,5") // 設定為虛線，5px 實線，5px 空白
+  //   .on("mouseenter", () => handleMouseOverRegion("琉球鄉")) // 滑鼠移入時改變顏色
+  //   .on("mouseleave", () => handleMouseOutRegion("琉球鄉")); // 滑鼠移出時恢復顏色
 
-  // 繪製琉球鄉的鄉鎮市區
-  xiaoliuqiuGroup
-    .selectAll(".xiaoliuqiu-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "琉球鄉"))
-    .enter()
-    .append("path")
-    .attr("class", "xiaoliuqiu-town-boundary")
-    .attr("d", pathXiaoliuqiu)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["琉球鄉"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
-    })
-    .attr("stroke", "none")
-    .attr("stroke-width", 1)
-    .on("mouseenter", () => handleMouseOverXiaoliuqiu("琉球鄉")) // 確保琉球地圖也會觸發
-    .on("mouseleave", () => handleMouseOutRegion("琉球鄉"));
+  // // 繪製琉球鄉的鄉鎮市區
+  // xiaoliuqiuGroup
+  //   .selectAll(".xiaoliuqiu-town-boundary")
+  //   .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "琉球鄉"))
+  //   .enter()
+  //   .append("path")
+  //   .attr("class", "xiaoliuqiu-town-boundary")
+  //   .attr("d", pathXiaoliuqiu)
+  //   .attr("fill", (d) => {
+  //     const townName = d.properties.TOWNNAME;
+  //     const highlightTowns = dynamicHighlightData.value["琉球鄉"] || [];
+  //     return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+  //   })
+  //   .attr("stroke", "none")
+  //   .attr("stroke-width", 1)
+  //   .on("mouseenter", () => handleMouseOverRegion("琉球鄉")) // 確保琉球地圖也會觸發
+  //   .on("mouseleave", () => handleMouseOutRegion("琉球鄉"));
 
-  // 琉球文字
-  xiaoliuqiuGroup
-    .append("text")
-    .attr("class", "xiaoliuqiu-label")
-    .attr("x", 75) // 文字水平位置，框框中心
-    .attr("y", 135) // 文字垂直位置，接近框框底部
-    .attr("text-anchor", "middle") // 文字水平居中對齊
-    .attr("alignment-baseline", "middle") // 文字垂直居中對齊
-    .attr("font-size", "14px") // 字體大小
-    .attr("fill", "#7d7d7d") // 字體顏色
-    .text("屏東縣(小琉球)"); // 文字內容
+  // // 琉球文字
+  // xiaoliuqiuGroup
+  //   .append("text")
+  //   .attr("class", "xiaoliuqiu-label")
+  //   .attr("x", 75) // 文字水平位置，框框中心
+  //   .attr("y", 135) // 文字垂直位置，接近框框底部
+  //   .attr("text-anchor", "middle") // 文字水平居中對齊
+  //   .attr("alignment-baseline", "middle") // 文字垂直居中對齊
+  //   .attr("font-size", "14px") // 字體大小
+  //   .attr("fill", "#7d7d7d") // 字體顏色
+  //   .text("屏東縣(小琉球)"); // 文字內容
 
-  // 綠島
-  const projectionGreenIsland = d3
-    .geoMercator()
-    .scale(50000)
-    .center([121.49, 22.661]) // 綠島中心點
-    .translate([80, 70]); // 框框位置
+  // // 綠島
+  // const projectionGreenIsland = d3
+  //   .geoMercator()
+  //   .scale(50000)
+  //   .center([121.49, 22.661]) // 綠島中心點
+  //   .translate([80, 70]); // 框框位置
 
-  const pathGreenIsland = d3.geoPath().projection(projectionGreenIsland);
+  // const pathGreenIsland = d3.geoPath().projection(projectionGreenIsland);
 
-  const greenIslandGroup = svg
-    .append("g")
-    .attr("class", "green-island-group")
-    .attr("transform", `translate(${width - 160}, ${height - 350})`); // 框框位置調整
+  // const greenIslandGroup = svg
+  //   .append("g")
+  //   .attr("class", "green-island-group")
+  //   .attr("transform", `translate(${width - 160}, ${height - 350})`); // 框框位置調整
 
-  // 綠島框框
-  greenIslandGroup
-    // .append("rect")
-    .append("path")
-    .attr("class", "green-island-border")
-    .attr("width", 150)
-    .attr("height", 150)
-    .attr(
-      "d",
-      `M0,150 V0 H150 V150 ` // 自訂路徑，上->右->下，沒有畫底部框線
-    )
-    .attr("fill", "none")
-    .attr("stroke", "#5BB49F")
-    .attr("stroke-width", 2)
-    .attr("stroke-dasharray", "5,5")
-    .on("mouseenter", () => handleMouseOverTaitungIsland("臺東縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("綠島鄉")); // 滑鼠移出時恢復顏色
+  // // 綠島框框
+  // greenIslandGroup
+  //   // .append("rect")
+  //   .append("path")
+  //   .attr("class", "green-island-border")
+  //   .attr("width", 150)
+  //   .attr("height", 150)
+  //   .attr(
+  //     "d",
+  //     `M0,150 V0 H150 V150 ` // 自訂路徑，上->右->下，沒有畫底部框線
+  //   )
+  //   .attr("fill", "none")
+  //   .attr("stroke", "#5BB49F")
+  //   .attr("stroke-width", 2)
+  //   .attr("stroke-dasharray", "5,5")
+  //   .on("mouseenter", () => handleMouseOverRegion("臺東縣")) // 滑鼠移入時改變顏色
+  //   .on("mouseleave", () => handleMouseOutRegion("臺東縣")); // 滑鼠移出時恢復顏色
 
-  // 繪製綠島地圖
-  greenIslandGroup
-    .selectAll(".green-island-boundary")
-    .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "綠島鄉"))
-    .enter()
-    .append("path")
-    .attr("class", "green-island-boundary")
-    .attr("d", pathGreenIsland)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["臺東縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
-    })
-    .attr("stroke", "none")
-    .on("mouseenter", () => handleMouseOverTaitungIsland("臺東縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("綠島鄉")); // 滑鼠移出時恢復顏色
+  // // 繪製綠島地圖
+  // greenIslandGroup
+  //   .selectAll(".green-island-boundary")
+  //   .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "綠島鄉"))
+  //   .enter()
+  //   .append("path")
+  //   .attr("class", "green-island-boundary")
+  //   .attr("d", pathGreenIsland)
+  //   .attr("fill", (d) => {
+  //     const townName = d.properties.TOWNNAME;
+  //     const highlightTowns = dynamicHighlightData.value["臺東縣"] || [];
+  //     return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+  //   })
+  //   .attr("stroke", "none")
+  //   .on("mouseenter", () => handleMouseOverRegion("臺東縣")) // 滑鼠移入時改變顏色
+  //   .on("mouseleave", () => handleMouseOutRegion("臺東縣")); // 滑鼠移出時恢復顏色
 
-  // 綠島文字
-  greenIslandGroup
-    .append("text")
-    .attr("class", "green-island-label")
-    .attr("x", 75) // 框框內水平居中
-    .attr("y", 135) // 框框底部上方
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "middle")
-    .attr("font-size", "14px")
-    .attr("fill", "#7d7d7d")
-    .text("臺東縣(綠島)");
+  // // 綠島文字
+  // greenIslandGroup
+  //   .append("text")
+  //   .attr("class", "green-island-label")
+  //   .attr("x", 75) // 框框內水平居中
+  //   .attr("y", 135) // 框框底部上方
+  //   .attr("text-anchor", "middle")
+  //   .attr("alignment-baseline", "middle")
+  //   .attr("font-size", "14px")
+  //   .attr("fill", "#7d7d7d")
+  //   .text("臺東縣(綠島)");
 
-  // 蘭嶼
-  const projectionLanyu = d3
-    .geoMercator()
-    .scale(40000)
-    .center([121.55, 22.045]) // 蘭嶼中心點
-    .translate([80, 70]);
+  // // 蘭嶼
+  // const projectionLanyu = d3
+  //   .geoMercator()
+  //   .scale(40000)
+  //   .center([121.55, 22.045]) // 蘭嶼中心點
+  //   .translate([80, 70]);
 
-  const pathLanyu = d3.geoPath().projection(projectionLanyu);
+  // const pathLanyu = d3.geoPath().projection(projectionLanyu);
 
-  const lanyuGroup = svg
-    .append("g")
-    .attr("class", "lanyu-group")
-    .attr("transform", `translate(${width - 160}, ${height - 200})`); // 框框位置調整
+  // const lanyuGroup = svg
+  //   .append("g")
+  //   .attr("class", "lanyu-group")
+  //   .attr("transform", `translate(${width - 160}, ${height - 200})`); // 框框位置調整
 
-  // 蘭嶼框框
-  lanyuGroup
-    // .append("rect")
-    .append("path")
-    .attr("class", "lanyu-border")
-    .attr("width", 150)
-    .attr("height", 250)
-    .attr(
-      "d",
-      `M150,0 V150 H0 V0 ` // 自訂框線的路徑， 右 -> 下 -> 左
-    )
-    .attr("fill", "none")
-    .attr("stroke", "#5BB49F")
-    .attr("stroke-width", 2)
-    .attr("stroke-dasharray", "5,5")
-    .on("mouseenter", () => handleMouseOverTaitungIsland("臺東縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("蘭嶼鄉")); // 滑鼠移出時恢復顏色;
+  // // 蘭嶼框框
+  // lanyuGroup
+  //   // .append("rect")
+  //   .append("path")
+  //   .attr("class", "lanyu-border")
+  //   .attr("width", 150)
+  //   .attr("height", 250)
+  //   .attr(
+  //     "d",
+  //     `M150,0 V150 H0 V0 ` // 自訂框線的路徑， 右 -> 下 -> 左
+  //   )
+  //   .attr("fill", "none")
+  //   .attr("stroke", "#5BB49F")
+  //   .attr("stroke-width", 2)
+  //   .attr("stroke-dasharray", "5,5")
+  //   .on("mouseenter", () => handleMouseOverRegion("臺東縣")) // 滑鼠移入時改變顏色
+  //   .on("mouseleave", () => handleMouseOutRegion("臺東縣")); // 滑鼠移出時恢復顏色;
 
-  // 繪製蘭嶼地圖
-  lanyuGroup
-    .selectAll(".lanyu-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "蘭嶼鄉"))
-    .enter()
-    .append("path")
-    .attr("class", "lanyu-town-boundary")
-    .attr("d", pathLanyu)
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["臺東縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
-    })
-    .attr("stroke", "none")
-    .on("mouseenter", () => handleMouseOverTaitungIsland("臺東縣")) // 滑鼠移入時改變顏色
-    .on("mouseleave", () => handleMouseOutRegion("蘭嶼鄉")); // 滑鼠移出時恢復顏色;
+  // // 繪製蘭嶼地圖
+  // lanyuGroup
+  //   .selectAll(".lanyu-town-boundary")
+  //   .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "蘭嶼鄉"))
+  //   .enter()
+  //   .append("path")
+  //   .attr("class", "lanyu-town-boundary")
+  //   .attr("d", pathLanyu)
+  //   .attr("fill", (d) => {
+  //     const townName = d.properties.TOWNNAME;
+  //     const highlightTowns = dynamicHighlightData.value["臺東縣"] || [];
+  //     return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede";
+  //   })
+  //   .attr("stroke", "none")
+  //   .on("mouseenter", () => handleMouseOverRegion("臺東縣")) // 滑鼠移入時改變顏色
+  //   .on("mouseleave", () => handleMouseOutRegion("臺東縣")); // 滑鼠移出時恢復顏色;
 
-  // 蘭嶼文字
-  lanyuGroup
-    .append("text")
-    .attr("class", "lanyu-label")
-    .attr("x", 75) // 框框內水平居中
-    .attr("y", 135) // 框框底部上方
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "middle")
-    .attr("font-size", "14px")
-    .attr("fill", "#7d7d7d")
-    .text("臺東縣(蘭嶼)");
+  // // 蘭嶼文字
+  // lanyuGroup
+  //   .append("text")
+  //   .attr("class", "lanyu-label")
+  //   .attr("x", 75) // 框框內水平居中
+  //   .attr("y", 135) // 框框底部上方
+  //   .attr("text-anchor", "middle")
+  //   .attr("alignment-baseline", "middle")
+  //   .attr("font-size", "14px")
+  //   .attr("fill", "#7d7d7d")
+  //   .text("臺東縣(蘭嶼)");
+
+  drawIsland(svg, townGeo, dynamicHighlightData, {
+    region: "連江縣",
+    hoverRegion: "連江縣",
+    groupClass: "lienchiang-group",
+    borderClass: "lienchiang-border",
+    boundaryClass: "lienchiang-town-boundary",
+    labelClass: "lienchiang-label",
+    labelText: "連江縣",
+    projectionConfig: {
+      scale: 15000,
+      center: [119.95, 26.2],
+      translate: [50, 70],
+      width: 200,
+      height: 200,
+      labelX: 75,
+      labelY: 175,
+    },
+    position: { x: 0, y: 0 },
+    typeName: "COUNTYNAME",
+  });
+
+  drawIsland(svg, townGeo, dynamicHighlightData, {
+    region: "金門縣",
+    hoverRegion: "金門縣",
+    groupClass: "kinmen-group",
+    borderClass: "kinmen-border",
+    boundaryClass: "kinmen-town-boundary",
+    labelClass: "kinmen-label",
+    labelText: "金門縣",
+    projectionConfig: {
+      scale: 20000,
+      center: [118.318, 24.43],
+      translate: [70, 80],
+      width: 150,
+      height: 150,
+      labelX: 75,
+      labelY: 135,
+    },
+    position: { x: 0, y: 220 },
+    typeName: "COUNTYNAME",
+  });
+
+  drawIsland(svg, townGeo, dynamicHighlightData, {
+    region: "澎湖縣",
+    hoverRegion: "澎湖縣",
+    groupClass: "penghu-group",
+    borderClass: "penghu-border",
+    boundaryClass: "penghu-town-boundary",
+    labelClass: "penghu-label",
+    labelText: "澎湖縣",
+    projectionConfig: {
+      scale: 15000,
+      center: [119.566, 23.571],
+      translate: [80, 70],
+      width: 150,
+      height: 200,
+      labelX: 75,
+      labelY: 185,
+    },
+    position: { x: 0, y: height - 400 },
+    typeName: "COUNTYNAME",
+  });
+
+  drawIsland(svg, townGeo, dynamicHighlightData, {
+    region: "琉球鄉",
+    hoverRegion: "琉球鄉",
+    groupClass: "xiaoliuqiu-group",
+    borderClass: "xiaoliuqiu-border",
+    boundaryClass: "xiaoliuqiu-town-boundary",
+    labelClass: "xiaoliuqiu-label",
+    labelText: "屏東縣(小琉球)",
+    projectionConfig: {
+      scale: 80000,
+      center: [120.371, 22.345],
+      translate: [80, 70],
+      width: 150,
+      height: 150,
+      labelX: 75,
+      labelY: 135,
+    },
+    position: { x: 0, y: height - 150 },
+    typeName: "TOWNNAME",
+  });
+
+  drawIsland(svg, townGeo, dynamicHighlightData, {
+    region: "綠島鄉",
+    hoverRegion: "臺東縣",
+    groupClass: "green-island-group",
+    borderClass: "green-island-border",
+    boundaryClass: "green-island-boundary",
+    labelClass: "green-island-label",
+    labelText: "臺東縣(綠島)",
+    projectionConfig: {
+      scale: 50000,
+      center: [121.49, 22.661],
+      translate: [80, 70],
+      width: 150,
+      height: 150,
+      labelX: 75,
+      labelY: 135,
+    },
+    position: { x: width - 160, y: height - 350 },
+    customBorderPath: `M0,150 V0 H150 V150`,
+    typeName: "TOWNNAME",
+  });
+
+  drawIsland(svg, townGeo, dynamicHighlightData, {
+    region: "蘭嶼鄉",
+    hoverRegion: "臺東縣",
+    groupClass: "lanyu-group",
+    borderClass: "lanyu-border",
+    boundaryClass: "lanyu-town-boundary",
+    labelClass: "lanyu-label",
+    labelText: "臺東縣(蘭嶼)",
+    projectionConfig: {
+      scale: 40000,
+      center: [121.55, 22.045],
+      translate: [80, 70],
+      width: 150,
+      height: 250,
+      labelX: 75,
+      labelY: 135,
+    },
+    position: { x: width - 160, y: height - 200 },
+    customBorderPath: `M150,0 V150 H0 V0`,
+    typeName: "TOWNNAME",
+  });
 
   initializeMap();
 });
@@ -934,6 +1177,9 @@ onMounted(async () => {
       <button @click="updateHighlightByCity('南投縣')">南投縣</button>
       <button @click="updateHighlightByCity('金門縣')">金門縣</button>
       <button @click="updateHighlightByCity('連江縣')">連江縣</button>
+      <button @click="updateHighlightByCity('澎湖縣')">澎湖縣</button>
+      <button @click="updateHighlightByCity('琉球鄉')">琉球鄉</button>
+      <button @click="updateHighlightByCity('綠島和蘭嶼')">綠島和蘭嶼</button>
     </div>
     <div class="map">
       <div ref="mapContainer" class="map-city"></div>

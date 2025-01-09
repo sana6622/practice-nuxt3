@@ -130,6 +130,20 @@ const initializeMap = () => {
 
 // 滑鼠移入時，將該縣市標亮區域設為深綠
 const handleMouseOver = (region) => {
+  // 移除目前選中的地區樣式
+  if (selectedRegion.value) {
+    d3.select(mapContainer.value)
+      .selectAll(".town-boundary")
+      .filter((d) => d.properties.COUNTYNAME === selectedRegion.value)
+      .attr("fill", (d) => {
+        const countyName = d.properties.COUNTYNAME;
+        const townName = d.properties.TOWNNAME;
+        const highlightTowns = dynamicHighlightData.value[countyName] || [];
+        return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede"; // 還原選中樣式
+      })
+      .attr("stroke", "#dedede") // 還原線條顏色
+      .attr("stroke-width", 1); // 還原線條寬度
+  }
   d3.select(mapContainer.value)
     .selectAll(".town-boundary")
     .filter((d) => d.properties.COUNTYNAME === region)
@@ -292,7 +306,7 @@ onMounted(async () => {
         .append("rect")
         .attr("class", "county-label-bg")
         .attr("x", cx + position.x - 30) // 調整矩形位置，確保文字居中
-        .attr("y", cy + position.y - 15)
+        .attr("y", cy + position.y - 17)
         .attr("width", 60) // 背景矩形的寬度
         .attr("height", 30) // 背景矩形的高度
         .attr("fill", "#f0f0f0") // 背景顏色（淺灰色）
@@ -320,9 +334,10 @@ onMounted(async () => {
 <template>
   <div>
     <div>
-      <button @click="updateHighlightByCity('新北市')">顯示新北市</button>
-      <button @click="updateHighlightByCity('桃園市')">顯示桃園市</button>
-      <button @click="updateHighlightByCity('新竹縣')">顯示新竹縣</button>
+      <button @click="updateHighlightByCity('新北市')">新北市</button>
+      <button @click="updateHighlightByCity('桃園市')">桃園市</button>
+      <button @click="updateHighlightByCity('新竹縣')">新竹縣</button>
+      <button @click="updateHighlightByCity('南投縣')">南投縣</button>
     </div>
     <div class="map">
       <div ref="mapContainer" class="map-city"></div>

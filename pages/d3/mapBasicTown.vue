@@ -132,8 +132,8 @@ onMounted(async () => {
   const townGeo = topojson.feature(townData, townData.objects.TOWN_MOI_1131028); // 替換為你的鄉鎮物件名稱
 
   // 3. 設置地圖尺寸
-  const width = 700;
-  const height = 800;
+  const width = 1200;
+  const height = 1800;
   const zoomFactor = 10;
 
   // 4. 創建 SVG 畫布

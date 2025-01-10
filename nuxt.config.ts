@@ -42,6 +42,9 @@ export default defineNuxtConfig({
           href: "https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap",
         },
       ],
+      htmlAttrs: {
+        lang: "zh-TW", // 設置全局 lang 屬性
+      },
     },
   },
   modules: ["@pinia/nuxt", "@vee-validate/nuxt", "nuxt-swiper", "@element-plus/nuxt", "@nuxt/icon"],

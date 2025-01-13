@@ -78,28 +78,6 @@ onMounted(async () => {
       // 點擊地區時更新 Vue 的響應式變數
       selectedRegion.value = d.properties.COUNTYNAME || "未知地區";
     });
-  // 7. 添加地名（可選）
-  svg
-    .selectAll("text")
-    .data(geoData.features)
-    .enter()
-    .append("text")
-    .attr("x", (d) => path.centroid(d)[0])
-    .attr("y", (d) => path.centroid(d)[1])
-    .attr("text-anchor", "middle")
-    .attr("font-size", "10px")
-    .text((d) => d.properties.COUNTYNAM); // 使用 TopoJSON 中的地名屬性
-
-  svg
-    .selectAll("text")
-    .data(geoData.features)
-    .enter()
-    .append("text")
-    .attr("x", (d) => path.centroid(d)[0])
-    .attr("y", (d) => path.centroid(d)[1])
-    .attr("text-anchor", "middle")
-    .attr("font-size", "10px")
-    .text((d) => d.properties.COUNTYNAME || "Unknown");
 });
 </script>
 

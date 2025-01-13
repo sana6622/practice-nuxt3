@@ -727,7 +727,7 @@ onMounted(async () => {
       labelY: 135,
     },
     position: { x: width - 160, y: height - 200 },
-    customBorderPath: `M150,0 V150 H0 V0`, // 自訂框線的路徑， 右 -> 下 -> 左
+    customBorderPath: `M150,0 V150 H0 V0`, // 自訂框線的路徑， 右 -> 下 -> 左 畫沒有上方的框線
     typeName: "TOWNNAME",
   });
 
@@ -760,64 +760,6 @@ onMounted(async () => {
     .attr("stroke-width", 1)
     .on("mouseenter", () => handleMouseOverRegion("金門縣"))
     .on("mouseleave", () => handleMouseOutRegion("金門縣"));
-
-  // 連江縣東引和西引
-  const lienchiangGroup = svg
-    .append("g")
-    .attr("class", "lienchiang-group")
-    .attr("transform", `translate(0, 0)`);
-
-  // 東引和西引的 projection 和 path
-  const projectionDongyin = d3
-    .geoMercator()
-    .scale(30000) // 縮放比例
-    .center([120.486, 26.365]) // 東引的中心點
-    .translate([-40, 50]); // 偏移到連江縣框框內的位置
-
-  const projectionXiyin = d3
-    .geoMercator()
-    .scale(15000) // 縮放比例
-    .center([120.475, 26.225]) // 西引的中心點
-    .translate([-70, 100]); // 偏移到連江縣框框內的位置
-
-  const pathDongyin = d3.geoPath().projection(projectionDongyin);
-  const pathXiyin = d3.geoPath().projection(projectionXiyin);
-
-  // 添加 "東引" 到連江縣框框內
-  lienchiangGroup
-    .selectAll(".dongyin-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "東引鄉"))
-    .enter()
-    .append("path")
-    .attr("class", "dongyin-town-boundary")
-    .attr("d", pathDongyin) // 使用新的 path
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["連江縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede"; // 與連江縣框框內其他區域一致
-    })
-    .attr("stroke", "none")
-    .attr("stroke-width", 1)
-    .on("mouseenter", () => handleMouseOverRegion("連江縣"))
-    .on("mouseleave", () => handleMouseOutRegion("連江縣"));
-
-  // 添加 "西引" 到連江縣框框內
-  lienchiangGroup
-    .selectAll(".xiyin-town-boundary")
-    .data(townGeo.features.filter((d) => d.properties.TOWNNAME === "西引鄉"))
-    .enter()
-    .append("path")
-    .attr("class", "xiyin-town-boundary")
-    .attr("d", pathXiyin) // 使用新的 path
-    .attr("fill", (d) => {
-      const townName = d.properties.TOWNNAME;
-      const highlightTowns = dynamicHighlightData.value["連江縣"] || [];
-      return highlightTowns.includes(townName) ? "#5BB49F" : "#dedede"; // 與連江縣框框內其他區域一致
-    })
-    .attr("stroke", "none")
-    .attr("stroke-width", 1)
-    .on("mouseenter", () => handleMouseOverRegion("連江縣"))
-    .on("mouseleave", () => handleMouseOutRegion("連江縣"));
 
   initializeMap();
 });

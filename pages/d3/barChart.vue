@@ -1,6 +1,5 @@
 <script setup>
 import * as d3 from "d3";
-import { ref, onMounted } from "vue";
 
 // 定義一個引用元素
 const chart1 = ref(null);

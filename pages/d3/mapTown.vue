@@ -4,6 +4,7 @@ import * as topojson from "topojson-client";
 
 const mapContainer = ref(null);
 
+//文字放置位置
 const countyLabelPositions = {
   基隆市: null,
   新北市: { x: 70, y: -10 },
@@ -29,8 +30,10 @@ const countyLabelPositions = {
   連江縣: { x: 0, y: 0 },
 };
 const selectedRegion = ref("請選擇一個地區"); // 儲存被選中的地區名稱
+
+// 當前標亮的鄉鎮市區
 const dynamicHighlightData = ref({
-  新北市: ["石碇區", "坪林區", "平溪區", "雙溪區", "烏來區", "貢寮區"], // 當前標亮的鄉鎮市區
+  新北市: ["石碇區", "坪林區", "平溪區", "雙溪區", "烏來區", "貢寮區"],
   桃園市: ["復興區"],
   新竹縣: ["五峰鄉", "尖石鄉", "關西鎮", "峨眉鄉"],
   苗栗縣: ["泰安鄉", "南庄鄉", "獅潭鄉", "三灣鄉"],

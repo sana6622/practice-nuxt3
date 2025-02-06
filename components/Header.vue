@@ -6,9 +6,7 @@ const toggleMenu = () => {
   isOpen.value = !isOpen.value;
   console.log("isOpen", isOpen.value);
 };
-onMounted(() => {
-  console.log("onMounted", menu);
-});
+onMounted(() => {});
 </script>
 
 <template>
@@ -54,6 +52,12 @@ onMounted(() => {
 
   .menu-sm {
     display: none;
+  }
+  .menu-lg {
+    display: flex;
+    li {
+      margin-right: 10px;
+    }
   }
   .hamburger {
     display: none;

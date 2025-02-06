@@ -19,6 +19,7 @@ const customizeStar = (content, name, prefix, provider) => {
 </script>
 <template>
   <div class="nuxt-icon">
+    <img src="../../public/icon/star.svg" alt="" />
     <Icon name="ph:arrow-down-duotone" size="40" style="color: red" />
     <Icon
       name="line-md:chat-round-dots-filled"

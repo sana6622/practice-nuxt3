@@ -1,0 +1,97 @@
+// TableComponent.vue
+<script setup>
+import { ref, watch } from "vue";
+import { useTableStore } from "@/stores/tableStore";
+
+const props = defineProps({
+  headers: Array,
+  items: Array,
+  storeKey: String, // 傳入不同的 key 來區分不同的資料來源
+});
+const emit = defineEmits(["update-items"]);
+
+const store = useTableStore();
+const tableItems = ref([...props.items]);
+
+let draggedIndex = null;
+const onDragStart = (index) => {
+  draggedIndex = index;
+};
+
+const onDrop = (index) => {
+  const draggedItem = tableItems.value.splice(draggedIndex, 1)[0];
+  tableItems.value.splice(index, 0, draggedItem);
+  draggedIndex = null;
+  emit("update-items", props.storeKey, [...tableItems.value]); // 通知父層更新資料
+};
+
+const saveToStore = () => {
+  store.setItems(props.storeKey, [...tableItems.value]); // 儲存拖曳後的結果到 Pinia
+};
+
+watch(
+  () => props.items,
+  (newItems) => {
+    tableItems.value = [...newItems];
+  },
+  { deep: true, immediate: true }
+);
+</script>
+
+<template>
+  <div>
+    <table class="panorama-table">
+      <thead>
+        <tr>
+          <th></th>
+          <!-- Placeholder for drag handle column -->
+          <th v-for="item in headers" :key="item.prop">
+            {{ item.label }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="(item, index) in tableItems"
+          :key="index"
+          draggable="true"
+          @dragstart="onDragStart(index)"
+          @dragover.prevent
+          @drop="onDrop(index)"
+        >
+          <td class="handle">=</td>
+          <td v-for="header in headers" :key="header.prop">
+            {{ item[header.prop] }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
+<style lang="scss">
+.panorama-table {
+  color: black;
+  width: 100%;
+  border-collapse: collapse;
+  background-color: transparent;
+  td,
+  th {
+    padding: 10px;
+    border-bottom: 1px solid black;
+    text-align: left;
+  }
+  .handle {
+    cursor: move;
+    font-size: 20px;
+    text-align: center;
+    width: 50px;
+  }
+  tbody tr {
+    background-color: transparent;
+  }
+  tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+}
+</style>

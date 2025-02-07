@@ -1,38 +1,46 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
 import OpenlayerMapBasic from "@/components/OpenlayerMapBasic.vue";
+import { useTableStore } from "@/stores/tableStore";
 
+const store = useTableStore();
+const router = useRouter();
+const heritageSites = ref([...store.tables["group1"]]);
 // **景點資訊**
-const heritageSites = ref([
-  {
-    name: "紅毛城",
-    coords: [121.4329423, 25.1754348],
-    image: "/image/mapImage/紅毛城.png",
-    type: 1,
-    bgc: 1,
-  },
-  {
-    name: "淡水禮拜堂",
-    coords: [121.43851652739518, 25.17194656891169],
-    image: "/image/mapImage/淡水禮拜堂.png",
-    type: 11,
-    bgc: 2,
-  },
-  {
-    name: "淡水老牌阿給",
-    coords: [121.43775684210453, 25.173653858612827],
-    image: "/image/mapImage/淡水老牌阿給.png",
-    type: 13,
-    bgc: 4,
-  },
-  {
-    name: "coco",
-    coords: [121.44530842827339, 25.17046144068769],
-    image: "/image/mapImage/coco.png",
-    type: 14,
-    bgc: 4,
-  },
-]);
+// const heritageSites = ref([
+//   {
+//     id: 1,
+//     name: "紅毛城",
+//     coords: [121.4329423, 25.1754348],
+//     image: "/image/mapImage/紅毛城.png",
+//     type: 1,
+//     bgc: 1,
+//   },
+//   {
+//     id: 2,
+//     name: "淡水禮拜堂",
+//     coords: [121.43851652739518, 25.17194656891169],
+//     image: "/image/mapImage/淡水禮拜堂.png",
+//     type: 11,
+//     bgc: 2,
+//   },
+//   {
+//     id: 3,
+//     name: "淡水老牌阿給",
+//     coords: [121.43775684210453, 25.173653858612827],
+//     image: "/image/mapImage/淡水老牌阿給.png",
+//     type: 13,
+//     bgc: 4,
+//   },
+//   {
+//     id: 4,
+//     name: "coco",
+//     coords: [121.44530842827339, 25.17046144068769],
+//     image: "/image/mapImage/coco.png",
+//     type: 14,
+//     bgc: 4,
+//   },
+// ]);
 
 const activeImage = ref(""); // 當前顯示的圖片
 const activeSit = ref({});
@@ -92,7 +100,13 @@ const scrollToSite = (siteName) => {
     console.warn("找不到對應的景點:", siteName);
   }
 };
+
+const preventClick = () => {
+  router.push("/openlayer/dragTableAndExcel");
+};
+
 onMounted(() => {
+  console.log("取出Pinia資料", store.tables["group1"]);
   activeImage.value = heritageSites.value[0].image;
   mapRef.value.flyTo(heritageSites.value[0].coords);
 });
@@ -100,6 +114,7 @@ onMounted(() => {
 <template>
   <div class="oplayerStory">
     <div>
+      <button @click="preventClick">回資料表</button>
       <button @click="toggleIcons">切換 Icon 顯示</button>
       <button @click="togglePaths">切換線條顯示</button>
       <p>icon:{{ showIcon ? "顯示" : "不顯示" }}</p>
@@ -150,6 +165,7 @@ onMounted(() => {
         <li>在地圖點選icon時，左側文字與圖片會產生對應景點資料</li>
         <li>點與點之間會依序產生線條</li>
         <li>button調整圖層顯示(icon&線條)</li>
+        <li>資料來源是table(回資料表可看到詳細資訊)</li>
       </ul>
     </div>
   </div>

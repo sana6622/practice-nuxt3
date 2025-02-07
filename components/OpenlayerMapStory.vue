@@ -89,10 +89,10 @@ const initMap = () => {
 
   mapInstance.value.on("moveend", () => {
     if (!showPaths.value) {
-      console.log("showPaths 為 false，不更新路線");
+      // console.log("showPaths 為 false，不顯示線條");
       return; // 不執行 checkClusterStatus()
     }
-    console.log("地圖視野變更，重新檢查群聚狀態");
+    // console.log("視野變更，重新檢查群聚");
     checkClusterStatus();
   });
 };
@@ -116,12 +116,18 @@ const addHeritageSites = () => {
 
   const features = heritageSites.map((site) => {
     const coordinates = fromLonLat(site.coords);
-    return new Feature({
+    const feature = new Feature({
       geometry: new Point(coordinates),
       name: site.name,
       type: site.type,
       bgc: site.bgc,
     });
+
+    feature.setProperties({
+      styleType: "icon", // 這行確保這個 feature 被標記為 icon
+    });
+
+    return feature;
   });
 
   // **初始化 Cluster**
@@ -152,7 +158,6 @@ const checkClusterStatus = () => {
   if (!clusterSource.value) return;
 
   const clusters = clusterSource.value.getFeatures();
-  console.log("Clusters (on moveend):", clusters);
 
   let hasCluster = false;
 
@@ -360,7 +365,26 @@ const updatePaths = (showPath) => {
 
 onMounted(() => {
   initMap();
+  //點擊Icon 取得icon的name 傳到父層
+  mapInstance.value.on("singleclick", (event) => {
+    mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
+      let properties = feature.getProperties();
+
+      if (properties.features) {
+        const firstFeature = properties.features[0]; // 取第一個 feature
+        properties = firstFeature.getProperties(); // 重新取 properties
+      }
+
+      // **確保 styleType 存在**
+      if (properties.styleType === "icon") {
+        console.log("✅ 點擊了 Icon:", properties.name);
+        emit("select-site", properties.name);
+      }
+    });
+  });
 });
+// 定義 emit 事件，讓父層接收點擊結果
+const emit = defineEmits(["select-site"]);
 
 // **暴露方法供父層 (`OpenlayerBasic.vue`) 呼叫**
 defineExpose({

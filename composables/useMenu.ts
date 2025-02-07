@@ -17,6 +17,14 @@ export const useMenu = () => {
       sub: [
         { subTitle: "openlayer基本功能", link: "/openlayer/openlayerBasic" },
         { subTitle: "openlayer Story", link: "/openlayer/openlayerStory" },
+        {
+          subTitle: "拖曳表單+上傳Excel",
+          link: "/openlayer/dragTableAndExcel",
+        },
+        {
+          subTitle: "openlayer Story+table資料",
+          link: "/openlayer/openlayerStoryByTable",
+        },
       ],
     },
     {

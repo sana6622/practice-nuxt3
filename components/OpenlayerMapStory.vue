@@ -77,6 +77,7 @@ const initMap = () => {
       center: tamsuiCenter,
       zoom: 18,
       projection: "EPSG:3857",
+      maxZoom: 20, //限制最大可放大的程度，如果不設定會需要處理cors問題
     }),
   });
   mapInstance.value.addLayer(lineLayer);
@@ -322,6 +323,7 @@ const flyTo = (coords) => {
     center: fromLonLat(coords),
     zoom: 18,
     duration: 500,
+    maxZoom: 20, //限制最大可放大的程度，如果不設定會需要處理cors問題
   });
 };
 
@@ -331,6 +333,7 @@ const resetView = () => {
     center: tamsuiCenter,
     zoom: 18,
     duration: 500,
+    maxZoom: 20, //限制最大可放大的程度，如果不設定會需要處理cors問題
   });
 };
 

@@ -28,6 +28,15 @@ const onDrop = (index) => {
 const saveToStore = () => {
   store.setItems(props.storeKey, [...tableItems.value]); // 儲存拖曳後的結果到 Pinia
 };
+// 觸發編輯
+const editItem = (item) => {
+  emit("edit-item", item);
+};
+
+// 觸發刪除
+const deleteItem = (item) => {
+  emit("delete-item", item);
+};
 
 watch(
   () => props.items,
@@ -61,7 +70,13 @@ watch(
         >
           <td class="handle">=</td>
           <td v-for="header in headers" :key="header.prop">
-            {{ item[header.prop] }}
+            <template v-if="header.prop === 'action'">
+              <button @click="editItem(item)">編輯</button>
+              <button @click="deleteItem(item)">刪除</button>
+            </template>
+            <template v-else>
+              {{ item[header.prop] }}
+            </template>
           </td>
         </tr>
       </tbody>

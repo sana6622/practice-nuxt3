@@ -19,26 +19,29 @@ import {
 } from "ol/style.js";
 import LineString from "ol/geom/LineString.js";
 
+import { getIconPathById } from "@/constants/icons";
+import { getIconColor } from "@/constants/color";
+
 //文化景觀 icon
-import attraction from "@/assets/img/mapIcon/attraction.svg";
-import info from "@/assets/img/mapIcon/info.svg";
-import barrier from "@/assets/img/mapIcon/barrier.svg";
-import hospital from "@/assets/img/mapIcon/hospital.svg";
-import hotel from "@/assets/img/mapIcon/hotel.svg";
-import industry from "@/assets/img/mapIcon/industry.svg";
-import militaryCamp from "@/assets/img/mapIcon/militaryCamp.svg";
-import monument from "@/assets/img/mapIcon/monument.svg";
-import prize from "@/assets/img/mapIcon/prize.svg";
-import other from "@/assets/img/mapIcon/other.svg";
-import grave from "@/assets/img/mapIcon/grave.svg";
-import school from "@/assets/img/mapIcon/school.svg";
-import shooting from "@/assets/img/mapIcon/shooting.svg";
-import temple from "@/assets/img/mapIcon/temple.svg";
-import tunnel from "@/assets/img/mapIcon/tunnel.svg";
-import Star from "@/assets/img/mapIcon/Star.svg";
-import restaurant from "@/assets/img/mapIcon/restaurant.svg";
-import toilet from "@/assets/img/mapIcon/toilet.svg";
-import drink from "@/assets/img/mapIcon/drink.svg";
+// import attraction from "@/assets/img/mapIcon/attraction.svg";
+// import info from "@/assets/img/mapIcon/info.svg";
+// import barrier from "@/assets/img/mapIcon/barrier.svg";
+// import hospital from "@/assets/img/mapIcon/hospital.svg";
+// import hotel from "@/assets/img/mapIcon/hotel.svg";
+// import industry from "@/assets/img/mapIcon/industry.svg";
+// import militaryCamp from "@/assets/img/mapIcon/militaryCamp.svg";
+// import monument from "@/assets/img/mapIcon/monument.svg";
+// import prize from "@/assets/img/mapIcon/prize.svg";
+// import other from "@/assets/img/mapIcon/other.svg";
+// import grave from "@/assets/img/mapIcon/grave.svg";
+// import school from "@/assets/img/mapIcon/school.svg";
+// import shooting from "@/assets/img/mapIcon/shooting.svg";
+// import temple from "@/assets/img/mapIcon/temple.svg";
+// import tunnel from "@/assets/img/mapIcon/tunnel.svg";
+// import Star from "@/assets/img/mapIcon/Star.svg";
+// import restaurant from "@/assets/img/mapIcon/restaurant.svg";
+// import toilet from "@/assets/img/mapIcon/toilet.svg";
+// import drink from "@/assets/img/mapIcon/drink.svg";
 
 const { ordinaryMap, dmaps, urbanLandZone, streetMap, landsect } =
   useLayerData();
@@ -120,7 +123,7 @@ const addHeritageSites = () => {
     const feature = new Feature({
       geometry: new Point(coordinates),
       name: site.name,
-      type: site.type,
+      icon: site.icon,
       bgc: site.bgc,
     });
 
@@ -130,6 +133,7 @@ const addHeritageSites = () => {
 
     return feature;
   });
+  console.log("features", features);
 
   // **初始化 Cluster**
   if (!clusterSource.value) {
@@ -273,48 +277,14 @@ const clusterStyle = (feature) => {
       new Style({
         image: new Icon({
           anchor: [0.5, 0.5],
-          src: getIcon(item.type),
+          // src: getIcon(item.type),
+          src: getIconPathById(item.icon),
           scale: 1,
         }),
       }),
     ];
   }
 };
-
-// 根據類型設定不同 icon
-const getIcon = (type) => {
-  const icons = {
-    1: attraction, // 觀光景點
-    2: info, // 一般資訊地點
-    3: hospital, // 醫院
-    4: monument, // 紀念碑
-    5: tunnel, // 隧道
-    6: school,
-    7: militaryCamp, // 軍營
-    8: barrier, // 障礙物（可能指圍欄、封閉區域等）
-    9: prize, // 獎勵（可能為獎盃、標誌）
-    10: grave, // 墳墓
-    11: temple, // 廟宇
-    12: hotel,
-    13: restaurant,
-    14: drink,
-    15: toilet,
-    16: industry, // 工業區
-    17: other, // 其他類別
-    starPoint: Star, // 注意這裡是字串 key
-  };
-  return icons[type] || other; // 如果找不到對應的 type，就回傳 other
-};
-
-// 根據類型設定不同背景顏色
-const getIconColor = (type, opacity = 1) =>
-  ({
-    1: `rgba(178, 99, 94, ${opacity})`,
-    2: `rgba(97, 151, 168, ${opacity})`,
-    3: `rgba(215, 166, 71, ${opacity})`,
-    4: `rgba(72, 68, 59, ${opacity})`,
-    5: `rgba(202, 178, 132, ${opacity})`,
-  }[type] || "rgba(202, 178, 132, 0.8)"); // 預設顏色
 
 // **飛到指定景點**
 const flyTo = (coords) => {

@@ -2,6 +2,8 @@
 <script setup>
 import { ref, watch } from "vue";
 import { useTableStore } from "@/stores/tableStore";
+import { getIconPathById } from "@/constants/icons";
+import { getIconColor } from "@/constants/color";
 
 const props = defineProps({
   headers: Array,
@@ -38,6 +40,11 @@ const deleteItem = (item) => {
   emit("delete-item", item);
 };
 
+// **計算屬性 - 取得 icon 路徑**
+const getIconPath = (iconId) => {
+  return getIconPathById(iconId) || ""; // 確保即使找不到，也回傳空字串
+};
+
 watch(
   () => props.items,
   (newItems) => {
@@ -70,7 +77,21 @@ watch(
         >
           <td class="handle">=</td>
           <td v-for="header in headers" :key="header.prop">
-            <template v-if="header.prop === 'action'">
+            <template v-if="header.prop === 'icon'">
+              <img
+                v-if="item.icon"
+                :src="getIconPath(item.icon)"
+                alt=""
+                class="icon"
+              />
+            </template>
+            <template v-else-if="header.prop === 'bgc'">
+              <div
+                class="color-box"
+                :style="{ backgroundColor: getIconColor(item.bgc) }"
+              ></div>
+            </template>
+            <template v-else-if="header.prop === 'action'">
               <button @click="editItem(item)">編輯</button>
               <button @click="deleteItem(item)">刪除</button>
             </template>
@@ -107,6 +128,13 @@ watch(
   }
   tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.18);
+  }
+  .icon {
+    background-color: black;
+  }
+  .color-box {
+    width: 25px;
+    height: 25px;
   }
 }
 </style>

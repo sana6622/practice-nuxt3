@@ -172,6 +172,9 @@ onMounted(() => {
         padding: 20px;
         background: #fffaf0;
         overflow-y: auto;
+        :hover {
+          background: #f8ddb3;
+        }
         li {
           padding: 10px;
           margin-bottom: 10px;
@@ -180,9 +183,6 @@ onMounted(() => {
           cursor: pointer;
           background: #ffebcd;
           transition: all 0.3s ease;
-          :hover {
-            background: #ffd700;
-          }
         }
       }
     }

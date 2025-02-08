@@ -8,28 +8,28 @@ const heritageSites = ref([
     name: "紅毛城",
     coords: [121.4329423, 25.1754348],
     image: "/image/mapImage/紅毛城.png",
-    type: 1,
+    icon: 1,
     bgc: 1,
   },
   {
     name: "淡水禮拜堂",
     coords: [121.43851652739518, 25.17194656891169],
     image: "/image/mapImage/淡水禮拜堂.png",
-    type: 11,
+    icon: 11,
     bgc: 2,
   },
   {
     name: "淡水老牌阿給",
     coords: [121.43775684210453, 25.173653858612827],
     image: "/image/mapImage/淡水老牌阿給.png",
-    type: 13,
+    icon: 13,
     bgc: 4,
   },
   {
     name: "coco",
     coords: [121.44530842827339, 25.17046144068769],
     image: "/image/mapImage/coco.png",
-    type: 14,
+    icon: 14,
     bgc: 4,
   },
 ]);
@@ -190,6 +190,9 @@ onMounted(() => {
         padding: 20px;
         background: #fffaf0;
         overflow-y: auto;
+        :hover {
+          background: #ffd700;
+        }
         li {
           padding: 10px;
           margin-bottom: 10px;

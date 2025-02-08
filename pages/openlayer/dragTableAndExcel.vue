@@ -1,6 +1,8 @@
 <script setup>
 import { useTableStore } from "@/stores/tableStore";
 import * as XLSX from "xlsx";
+import { getIconPathById } from "@/constants/icons";
+import { getIconColor } from "@/constants/color";
 
 const store = useTableStore();
 const router = useRouter();
@@ -17,7 +19,7 @@ const tableData = {
     { prop: "name", label: "景點", minWidth: "200" },
     { prop: "coords", label: "經緯度", minWidth: "200" },
     { prop: "image", label: "圖片位置", minWidth: "200" },
-    { prop: "type", label: "icon類型", minWidth: "200" },
+    { prop: "icon", label: "icon類型", minWidth: "200" },
     { prop: "bgc", label: "背景色", minWidth: "200" },
     { prop: "des", label: "描述", minWidth: "200" },
     { prop: "action", label: "操作", minWidth: "200", type: "action" },
@@ -28,10 +30,10 @@ const tableData = {
 const tableFields = ref([
   { prop: "id", label: "id", minWidth: "200", type: "number" },
   { prop: "name", label: "景點名稱", type: "text" },
-  { prop: "coords", label: "經緯度", type: "array" },
+  { prop: "coords", label: "經緯度", type: "coords" },
   { prop: "image", label: "圖片路徑", type: "text" },
-  { prop: "type", label: "icon 類型", type: "text" },
-  { prop: "bgc", label: "背景顏色", type: "text" },
+  { prop: "icon", label: "icon 類型", type: "icon" },
+  { prop: "bgc", label: "背景顏色", type: "color" },
   { prop: "des", label: "描述", type: "textarea" },
 ]);
 
@@ -72,13 +74,14 @@ const handleFileUpload = (event) => {
       name: row[1] || "",
       coords: row[2] ? JSON.parse(row[2]) : [],
       image: row[3] || "",
-      type: row[4] || "",
+      icon: row[4] || "",
       bgc: row[5] || "",
       des: row[6],
     }));
 
     // 更新 Pinia
     store.setItems("group1", formattedData);
+    console.log("pina", store.getItems("group1", formattedData));
     console.log("已更新 Pinia:", store.tables["group1"]);
   };
 };
@@ -95,32 +98,58 @@ const openAddDialog = () => {
   dialogRef.value.openDialog();
 };
 
-// **開啟編輯 Dialog**
+// 開啟編輯 Dialog**
 const openEditDialog = (item) => {
   dialogMode.value = "edit";
   selectedItem.value = { ...item };
   dialogRef.value.openDialog();
 };
 
+//驗證
+const verify = (newItem) => {
+  if (!newItem.id) {
+    alert("id必填");
+    return;
+  }
+  if (!newItem.coords) {
+    alert("coords必填");
+    return;
+  }
+
+  dialogRef.value.closeDialog();
+};
+
 const addItem = (newItem) => {
+  verify(newItem);
+  //經緯度=陣列
+  newItem.coords = Array.isArray(newItem.coords)
+    ? newItem.coords
+    : JSON.parse(newItem.coords);
+
   store.setItems("group1", [...store.tables["group1"], newItem]);
+  console.log("pina", store.tables["group1"]);
 };
 
 const updateItem = (newItem) => {
+  verify(newItem);
   const items = store.tables["group1"]; // 取得當前的資料陣列
   const index = items.findIndex((item) => item.id === newItem.id); // 找到對應 ID 的索引
+  newItem.coords = Array.isArray(newItem.coords)
+    ? newItem.coords
+    : JSON.parse(newItem.coords);
 
   if (index !== -1) {
     // 更新該筆資料
     items[index] = { ...newItem };
     store.setItems("group1", [...items]); // 觸發 Pinia 更新
+
     console.log("✅ 已更新項目:", newItem);
   } else {
     console.warn("⚠️ 找不到對應 ID，無法更新");
   }
 };
 
-// **刪除項目**
+// 刪除項目
 const deleteItem = (item) => {
   const confirmDelete = confirm(`確定要刪除 ${item.name} 嗎？`);
   if (confirmDelete) {
@@ -174,12 +203,16 @@ onMounted(() => {
     />
 
     <div class="hit">
-      <p>使用檔案: store/tableStore</p>
+      <p>使用檔案:</p>
+      <ul>
+        <li>store/tableStore</li>
+        <li>靜態檔案: constants/color & constants/icon</li>
+      </ul>
       <p>安裝:npm install xlsx</p>
       <p>功能:</p>
       <ul>
-        <li>資料儲存與調用使用pinia</li>
-        <li>可用excel 上傳資料,副檔名(.xlsx)</li>
+        <li>使用pinia:資料儲存與調用</li>
+        <li>可用excel 上傳資料,副檔名必須是.xlsx</li>
         <li>
           可以使用這個excel檔案
           https://docs.google.com/spreadsheets/d/1TjRyCySb4TtQfP1tn-A3fHZ5AiQIQoEy-5ge7kKvuSo/edit?hl=zh-tw&gid=0#gid=0

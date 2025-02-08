@@ -1,3 +1,114 @@
+<script setup>
+import { ref, defineProps, defineEmits, watch } from "vue";
+import { iconList, getIconById } from "@/constants/icons";
+import { colorList, getIconColor } from "@/constants/color";
+const icons = ref(iconList);
+const colors = ref(colorList);
+
+const props = defineProps({
+  mode: String, // "add" 或 "edit"
+  modelValue: Object, // 綁定的表單數據
+  dialogTitle: String, // Dialog 標題
+  fields: Array, // 欄位陣列
+});
+
+const emit = defineEmits(["update:modelValue", "add-item", "update-item"]);
+
+const dialogVisible = ref(false);
+const formData = ref({});
+const longitudeInput = ref(""); // 經度 (Longitude)
+const latitudeInput = ref(""); // 緯度 (Latitude)
+
+// **手動定義 `public/image/mapIcon/` 內的檔案名稱**
+// const loadIcons = () => {
+//   const iconNames = [
+//     "attraction.svg",
+//     "info.svg",
+//     "barrier.svg",
+//     "hospital.svg",
+//     "hotel.svg",
+//     "industry.svg",
+//     "militaryCamp.svg",
+//     "monument.svg",
+//     "prize.svg",
+//     "other.svg",
+//     "grave.svg",
+//     "school.svg",
+//     "shooting.svg",
+//     "temple.svg",
+//     "tunnel.svg",
+//     "Star.svg",
+//     "restaurant.svg",
+//     "toilet.svg",
+//     "drink.svg",
+//   ];
+
+//   const basePath = "/image/mapIcon/";
+//   icons.value = iconNames.reduce((acc, name) => {
+//     acc[name.replace(".svg", "")] = `${basePath}${name}`;
+//     return acc;
+//   }, {});
+// };
+
+// **初始化 icon**
+// loadIcons();
+
+// **監聽 modelValue 變更**
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    formData.value = { ...newVal };
+
+    // **如果 coords 存在，解析成經度 & 緯度**
+    if (Array.isArray(newVal.coords) && newVal.coords.length === 2) {
+      longitudeInput.value = newVal.coords[0].toString(); // 經度
+      latitudeInput.value = newVal.coords[1].toString(); // 緯度
+    } else {
+      longitudeInput.value = "";
+      latitudeInput.value = "";
+    }
+  },
+  { deep: true, immediate: true }
+);
+
+// **監聽經緯度輸入框的變更，更新 formData.coords**
+watch([longitudeInput, latitudeInput], ([newLon, newLat]) => {
+  if (newLon && newLat) {
+    formData.value.coords = [parseFloat(newLon), parseFloat(newLat)];
+  } else {
+    formData.value.coords = [];
+  }
+});
+
+// **開啟對話框 由父層控制**
+const openDialog = () => {
+  dialogVisible.value = true;
+};
+const closeDialog = () => {
+  dialogVisible.value = false;
+};
+
+const selectIcon = (icon) => {
+  formData.value.icon = icon.id;
+  console.log("formData", formData);
+};
+
+const selectColor = (color) => {
+  formData.value.bgc = color.id;
+};
+
+// **儲存資料**
+const saveItem = () => {
+  if (props.mode === "edit") {
+    emit("update-item", { ...formData.value });
+  } else {
+    emit("add-item", { ...formData.value });
+  }
+};
+
+defineExpose({ openDialog, closeDialog });
+</script>
+
 <template>
   <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
     <el-form ref="formRef" :model="formData" label-width="100px">
@@ -11,17 +122,53 @@
           v-if="field.type === 'number'"
           v-model.number="formData[field.prop]"
           type="number"
+          :min="0"
         />
         <el-input
           v-if="field.type === 'textarea'"
           v-model="formData[field.prop]"
           type="textarea"
         />
-        <el-input
-          v-if="field.type === 'array'"
-          v-model="formData[field.prop]"
-          placeholder="請輸入 [121.4329, 25.1754]"
-        />
+
+        <!-- **經緯度兩個 input 欄位** -->
+        <div v-if="field.prop === 'coords'">
+          <div class="coords-input-group">
+            <el-input
+              v-model="longitudeInput"
+              placeholder="請輸入經度 (Longitude)"
+            />
+            <el-input
+              v-model="latitudeInput"
+              placeholder="請輸入緯度 (Latitude)"
+            />
+          </div>
+
+          <span>注意: google地圖上顯示的為緯經度</span>
+        </div>
+        <!-- 圖片選擇器 -->
+        <div v-if="field.prop === 'icon'" class="icon-grid">
+          <div
+            v-for="icon in icons"
+            :key="icon.id"
+            class="icon-item"
+            :class="{ selected: formData.icon === icon.id }"
+            @click="selectIcon(icon)"
+          >
+            <img :src="icon.path" :alt="icon.name" />
+          </div>
+        </div>
+
+        <!-- 顏色選擇器 -->
+        <div v-if="field.prop === 'bgc'" class="color-grid">
+          <div
+            v-for="color in colors"
+            :key="color.id"
+            class="color-item"
+            :style="{ backgroundColor: color.color }"
+            :class="{ selected: formData.bgc === color.id }"
+            @click="selectColor(color)"
+          ></div>
+        </div>
       </el-form-item>
     </el-form>
     <template #footer>
@@ -35,54 +182,49 @@
   </el-dialog>
 </template>
 
-<script setup>
-import { ref, defineProps, defineEmits, watch } from "vue";
+<style lang="scss" scoped>
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background-color: gray;
+  padding: 10px;
+}
 
-const props = defineProps({
-  mode: String, // "add" 或 "edit"
-  modelValue: Object, // 綁定的表單數據
-  dialogTitle: String, // Dialog 標題
-  fields: Array, // 欄位陣列
-});
+.icon-item {
+  width: 50px;
+  height: 50px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
 
-const emit = defineEmits(["update:modelValue", "add-item", "update-item"]);
+.icon-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-const dialogVisible = ref(false);
-const formData = ref({});
+.icon-item.selected {
+  outline: 4px solid #409eff;
+}
+.coords-input-group {
+  display: flex;
+  gap: 10px;
+}
 
-// **監聽 modelValue 變更**
-watch(
-  () => props.modelValue,
-  (newVal) => {
-    formData.value = { ...newVal };
-  },
-  { deep: true, immediate: true }
-);
+.color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 
-// **開啟對話框 由父層控制**
-const openDialog = () => {
-  dialogVisible.value = true;
-};
-
-// **儲存資料**
-const saveItem = () => {
-  if (formData.value.coords && typeof formData.value.coords === "string") {
-    try {
-      formData.value.coords = JSON.parse(formData.value.coords);
-    } catch (error) {
-      console.error("經緯度格式錯誤，請使用 [121.4329, 25.1754]");
-      return;
-    }
+  padding: 10px;
+  .color-item {
+    width: 20px;
+    height: 20px;
   }
-
-  if (props.mode === "edit") {
-    emit("update-item", { ...formData.value });
-  } else {
-    emit("add-item", { ...formData.value });
+  .color-item.selected {
+    outline: 3px solid #3f3f3d;
   }
-
-  dialogVisible.value = false;
-};
-
-defineExpose({ openDialog });
-</script>
+}
+</style>

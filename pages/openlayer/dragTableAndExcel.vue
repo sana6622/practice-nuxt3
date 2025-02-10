@@ -14,11 +14,12 @@ const dialogMode = ref("add"); // "add" 或 "edit"
 const selectedItem = ref({});
 const tableData = {
   headers: [
-    { prop: "drag", label: "", minWidth: "50" },
+    { prop: "drag", label: "", minWidth: "20" },
     { prop: "id", label: "id", minWidth: "200" },
     { prop: "name", label: "景點", minWidth: "200" },
     { prop: "coords", label: "經緯度", minWidth: "200" },
     { prop: "image", label: "圖片位置", minWidth: "200" },
+    { prop: "images", label: "多圖片位置", minWidth: "200" },
     { prop: "icon", label: "icon類型", minWidth: "200" },
     { prop: "bgc", label: "背景色", minWidth: "200" },
     { prop: "des", label: "描述", minWidth: "200" },
@@ -32,6 +33,7 @@ const tableFields = ref([
   { prop: "name", label: "景點名稱", type: "text" },
   { prop: "coords", label: "經緯度", type: "coords" },
   { prop: "image", label: "圖片路徑", type: "text" },
+  { prop: "images", label: "多圖片路徑", type: "multi" },
   { prop: "icon", label: "icon 類型", type: "icon" },
   { prop: "bgc", label: "背景顏色", type: "color" },
   { prop: "des", label: "描述", type: "textarea" },

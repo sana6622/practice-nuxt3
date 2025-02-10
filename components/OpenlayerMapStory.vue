@@ -126,8 +126,9 @@ const addHeritageSites = () => {
       style: clusterStyle,
     });
 
-    // **將群聚層加入地圖**
-    mapInstance.value.addLayer(clusterLayer.value);
+    clusterLayer.value.setZIndex(100); // **確保標記層始終在最上方**
+
+    mapInstance.value.addLayer(clusterLayer.value); // **將群聚層加入地圖**
   } else {
     // **更新群聚數據**
     clusterSource.value.getSource().clear();
@@ -173,8 +174,10 @@ const checkClusterStatus = () => {
     const lineFeature = new Feature({
       geometry: new LineString(lineCoordinates),
     });
+
     lineSource.addFeature(lineFeature);
   }
+  lineLayer.setZIndex(99); //線段在塗層最上面
 };
 
 //建立群聚
@@ -352,6 +355,7 @@ defineExpose({
   updatePaths,
   updateSites,
   // resetView,
+  getMap: () => mapInstance.value, //為了新增圖層(如地籍圖)
 });
 </script>
 

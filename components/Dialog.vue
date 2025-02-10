@@ -19,40 +19,6 @@ const formData = ref({});
 const longitudeInput = ref(""); // 經度 (Longitude)
 const latitudeInput = ref(""); // 緯度 (Latitude)
 
-// **手動定義 `public/image/mapIcon/` 內的檔案名稱**
-// const loadIcons = () => {
-//   const iconNames = [
-//     "attraction.svg",
-//     "info.svg",
-//     "barrier.svg",
-//     "hospital.svg",
-//     "hotel.svg",
-//     "industry.svg",
-//     "militaryCamp.svg",
-//     "monument.svg",
-//     "prize.svg",
-//     "other.svg",
-//     "grave.svg",
-//     "school.svg",
-//     "shooting.svg",
-//     "temple.svg",
-//     "tunnel.svg",
-//     "Star.svg",
-//     "restaurant.svg",
-//     "toilet.svg",
-//     "drink.svg",
-//   ];
-
-//   const basePath = "/image/mapIcon/";
-//   icons.value = iconNames.reduce((acc, name) => {
-//     acc[name.replace(".svg", "")] = `${basePath}${name}`;
-//     return acc;
-//   }, {});
-// };
-
-// **初始化 icon**
-// loadIcons();
-
 // **監聽 modelValue 變更**
 watch(
   () => props.modelValue,
@@ -67,6 +33,14 @@ watch(
       longitudeInput.value = "";
       latitudeInput.value = "";
     }
+    // **確保 `multi` 欄位是陣列，避免 `add` 模式時沒有初始化**
+    props.fields.forEach((field) => {
+      if (field.type === "multi") {
+        if (!Array.isArray(formData.value[field.prop])) {
+          formData.value[field.prop] = [""]; // 預設為一個空值
+        }
+      }
+    });
   },
   { deep: true, immediate: true }
 );
@@ -97,6 +71,16 @@ const selectColor = (color) => {
   formData.value.bgc = color.id;
 };
 
+// **新增多筆輸入框項目**
+const addMultiField = (prop) => {
+  formData.value[prop].push("");
+};
+
+// **移除多筆輸入框項目**
+const deleteMultiField = (prop, index) => {
+  formData.value[prop].splice(index, 1);
+};
+
 // **儲存資料**
 const saveItem = () => {
   if (props.mode === "edit") {
@@ -118,12 +102,28 @@ defineExpose({ openDialog, closeDialog });
         :label="field.label"
       >
         <el-input v-if="field.type === 'text'" v-model="formData[field.prop]" />
+        <div v-if="field.type === 'multi'">
+          <div
+            v-for="(item, idx) in formData[field.prop]"
+            :key="`item-${idx}`"
+            class="multi"
+          >
+            <el-input v-model="formData[field.prop][idx]" />
+            <el-button @click="addMultiField(field.prop)">+</el-button>
+            <el-button
+              v-if="formData[field.prop].length > 1"
+              @click="deleteMultiField(field.prop, idx)"
+              >-</el-button
+            >
+          </div>
+        </div>
         <el-input
           v-if="field.type === 'number'"
           v-model.number="formData[field.prop]"
           type="number"
           :min="0"
         />
+
         <el-input
           v-if="field.type === 'textarea'"
           v-model="formData[field.prop]"
@@ -153,6 +153,9 @@ defineExpose({ openDialog, closeDialog });
             class="icon-item"
             :class="{ selected: formData.icon === icon.id }"
             @click="selectIcon(icon)"
+            tabindex="0"
+            @keydown.enter="selectIcon(icon)"
+            @keydown.space.prevent="selectIcon(icon)"
           >
             <img :src="icon.path" :alt="icon.name" />
           </div>
@@ -167,6 +170,9 @@ defineExpose({ openDialog, closeDialog });
             :style="{ backgroundColor: color.color }"
             :class="{ selected: formData.bgc === color.id }"
             @click="selectColor(color)"
+            tabindex="0"
+            @keydown.enter="selectColor(color)"
+            @keydown.space.prevent="selectColor(color)"
           ></div>
         </div>
       </el-form-item>
@@ -183,6 +189,11 @@ defineExpose({ openDialog, closeDialog });
 </template>
 
 <style lang="scss" scoped>
+.multi {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
 .icon-grid {
   display: flex;
   flex-wrap: wrap;

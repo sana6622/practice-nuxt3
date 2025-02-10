@@ -15,6 +15,8 @@ export const useLayerData = () => {
     id: "map01",
     zIndex: 0,
   });
+
+  //地籍圖
   const dmaps = new TileLayer({
     name: "imageMap",
     source: new XYZ({
@@ -25,6 +27,7 @@ export const useLayerData = () => {
     id: "map02",
     zIndex: 2,
   });
+  //段籍圖
   const landsect = new TileLayer({
     name: "landsect",
     source: new XYZ({
@@ -35,6 +38,7 @@ export const useLayerData = () => {
     id: "map03",
     zIndex: 3,
   });
+
   const urbanLandZone = new TileLayer({
     name: "urbanLandZone",
     source: new TileWMS({
@@ -64,11 +68,47 @@ export const useLayerData = () => {
     id: "map05",
     visible: false,
   });
+
+  //淺色地圖
+  const cartoPositron = new TileLayer({
+    name: "CartoDB Positron",
+    source: new XYZ({
+      url: "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+      crossOrigin: "anonymous",
+    }),
+    visible: false,
+    zIndex: 3,
+  });
+  //深色
+  const cartoDarkMatter = new TileLayer({
+    name: "CartoDB Dark",
+    source: new XYZ({
+      url: "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+      crossOrigin: "anonymous",
+    }),
+    visible: false,
+    zIndex: 4,
+  });
+
+  //衛星地圖
+  const esriImagery = new TileLayer({
+    name: "Esri Imagery",
+    source: new XYZ({
+      url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      crossOrigin: "anonymous",
+    }),
+    visible: false,
+    zIndex: 3,
+  });
+
   return {
     ordinaryMap,
     dmaps,
     urbanLandZone,
     streetMap,
     landsect,
+    cartoPositron,
+    cartoDarkMatter,
+    esriImagery,
   };
 };

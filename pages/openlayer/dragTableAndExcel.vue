@@ -63,7 +63,7 @@ const handleFileUpload = (event) => {
     // 取得表頭 & 移除第一列標題
     let [header, ...rows] = jsonData;
 
-    // **嘗試手動轉換表頭為 UTF-8**
+    // **手動轉換表頭為 UTF-8**
     header = header.map((col) =>
       new TextDecoder("big5").decode(new Uint8Array([col]))
     );
@@ -94,7 +94,6 @@ const triggerFileInput = () => {
 const openAddDialog = () => {
   dialogMode.value = "add";
   selectedItem.value = {}; // 清空資料
-  console.log("a");
   dialogRef.value.openDialog();
 };
 

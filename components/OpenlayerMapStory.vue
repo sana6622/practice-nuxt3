@@ -22,27 +22,6 @@ import LineString from "ol/geom/LineString.js";
 import { getIconPathById } from "@/constants/icons";
 import { getIconColor } from "@/constants/color";
 
-//文化景觀 icon
-// import attraction from "@/assets/img/mapIcon/attraction.svg";
-// import info from "@/assets/img/mapIcon/info.svg";
-// import barrier from "@/assets/img/mapIcon/barrier.svg";
-// import hospital from "@/assets/img/mapIcon/hospital.svg";
-// import hotel from "@/assets/img/mapIcon/hotel.svg";
-// import industry from "@/assets/img/mapIcon/industry.svg";
-// import militaryCamp from "@/assets/img/mapIcon/militaryCamp.svg";
-// import monument from "@/assets/img/mapIcon/monument.svg";
-// import prize from "@/assets/img/mapIcon/prize.svg";
-// import other from "@/assets/img/mapIcon/other.svg";
-// import grave from "@/assets/img/mapIcon/grave.svg";
-// import school from "@/assets/img/mapIcon/school.svg";
-// import shooting from "@/assets/img/mapIcon/shooting.svg";
-// import temple from "@/assets/img/mapIcon/temple.svg";
-// import tunnel from "@/assets/img/mapIcon/tunnel.svg";
-// import Star from "@/assets/img/mapIcon/Star.svg";
-// import restaurant from "@/assets/img/mapIcon/restaurant.svg";
-// import toilet from "@/assets/img/mapIcon/toilet.svg";
-// import drink from "@/assets/img/mapIcon/drink.svg";
-
 const { ordinaryMap, dmaps, urbanLandZone, streetMap, landsect } =
   useLayerData();
 
@@ -59,7 +38,7 @@ const vectorSource = new VectorSource();
 const clusterSource = ref(null);
 const clusterLayer = ref(null);
 const tamsuiCenter = fromLonLat([121.44572903840833, 25.16787143460989]); // 預設中心
-const heritageSites = props.heritageSites;
+const heritageSites = ref([...props.heritageSites]);
 const showIcons = ref(true);
 const showPaths = ref(true);
 // **初始化地圖**
@@ -118,7 +97,7 @@ const addHeritageSites = () => {
   vectorSource.clear(); // 清除舊的標記
   lineSource.clear(); // 清除舊的線段
 
-  const features = heritageSites.map((site) => {
+  const features = heritageSites.value.map((site) => {
     const coordinates = fromLonLat(site.coords);
     const feature = new Feature({
       geometry: new Point(coordinates),
@@ -187,8 +166,8 @@ const checkClusterStatus = () => {
 
   //畫線
   lineSource.clear();
-  if (heritageSites.length > 1) {
-    const lineCoordinates = heritageSites.map((site) =>
+  if (heritageSites.value.length > 1) {
+    const lineCoordinates = heritageSites.value.map((site) =>
       fromLonLat(site.coords)
     );
     const lineFeature = new Feature({
@@ -288,7 +267,6 @@ const clusterStyle = (feature) => {
 
 // **飛到指定景點**
 const flyTo = (coords) => {
-  console.log("coord", coords);
   mapInstance.value.getView().animate({
     center: fromLonLat(coords),
     zoom: 18,
@@ -336,6 +314,14 @@ const updatePaths = (showPath) => {
   }
 };
 
+//重新賦值(當父層做景點篩選時)
+const updateSites = (newSites) => {
+  console.log("123123");
+  heritageSites.value = [...newSites]; // 重新賦值
+  console.log(" 子heritageSites.value ", heritageSites.value);
+  addHeritageSites(); // 重新繪製標示
+};
+
 onMounted(() => {
   initMap();
   //點擊Icon 取得icon的name 傳到父層
@@ -364,6 +350,7 @@ defineExpose({
   flyTo,
   updateIcons,
   updatePaths,
+  updateSites,
   // resetView,
 });
 </script>

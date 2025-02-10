@@ -35,7 +35,7 @@ export const useTableStore = defineStore("tableStore", {
           id: 4,
           name: "文化阿給",
           coords: [121.43741116667897, 25.174071603495342],
-          image: "/image/mapImage/淡水老牌阿給.png",
+          image: "/image/mapImage/文化阿給.png",
           icon: 13,
           bgc: 4,
           des: "辣味阿給的首選",

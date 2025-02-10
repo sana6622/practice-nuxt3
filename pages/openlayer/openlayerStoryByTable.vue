@@ -2,10 +2,13 @@
 import { ref, onMounted, nextTick } from "vue";
 import OpenlayerMapBasic from "@/components/OpenlayerMapBasic.vue";
 import { useTableStore } from "@/stores/tableStore";
+import { getIconPathById, iconList } from "@/constants/icons";
 
 const store = useTableStore();
 const router = useRouter();
+
 const heritageSites = ref([...store.tables["group1"]]);
+const selectIcon = ref("");
 
 const activeImage = ref(""); // 當前顯示的圖片
 const activeSit = ref({});
@@ -70,10 +73,44 @@ const preventClick = () => {
   router.push("/openlayer/dragTableAndExcel");
 };
 
+const clearHandle = () => {
+  heritageSites.value = [...store.tables["group1"]];
+  selectIcon.value = "";
+  mapRef.value.updateSites(heritageSites.value);
+  mapRef.value.flyTo(heritageSites.value[0].coords);
+  activeImage.value = heritageSites.value[0].image;
+};
+
+watch(
+  () => selectIcon.value,
+  (newIconId) => {
+    if (newIconId) {
+      heritageSites.value = store.tables["group1"].filter(
+        (site) => site.icon === newIconId
+      );
+      console.log("watch", heritageSites.value.length);
+      if (heritageSites.value.length > 0) {
+        console.log("select heritageSite", heritageSites);
+        mapRef.value.updateSites(heritageSites.value);
+        mapRef.value.flyTo(heritageSites.value[0].coords);
+        activeImage.value = heritageSites.value[0].image;
+      } else {
+        //沒有資料 回到預設值
+        alert("沒有資料");
+        clearHandle();
+      }
+    } else {
+      // 如果沒有選擇 icon，回復所有數據
+      heritageSites.value = [...store.tables["group1"]];
+    }
+  }
+);
+
 onMounted(() => {
   console.log("取出Pinia資料", store.tables["group1"]);
   activeImage.value = heritageSites.value[0].image;
   mapRef.value.flyTo(heritageSites.value[0].coords);
+  console.log("iconList", iconList);
 });
 </script>
 <template>
@@ -84,13 +121,22 @@ onMounted(() => {
       <button @click="togglePaths">切換線條顯示</button>
       <p>icon:{{ showIcon ? "顯示" : "不顯示" }}</p>
       <p>線條:{{ showPath ? "顯示" : "不顯示" }}</p>
+      <div class="select-area">
+        <el-select v-model="selectIcon" aria-placeholder="請選擇">
+          <el-option
+            :label="icon.name"
+            :value="icon.id"
+            v-for="icon in iconList"
+            :key="icon.id"
+            >{{ icon.name }}</el-option
+          >
+        </el-select>
+        <el-button @click="clearHandle()">清除篩選</el-button>
+      </div>
     </div>
     <div class="story">
-      <!-- **左邊地圖區塊** -->
+      <!-- **左邊區塊** -->
       <div class="info-area">
-        <!-- <div class="map-openlayer">
-          <OpenlayerMapStory ref="mapRef" :heritageSites="heritageSites" />
-        </div> -->
         <div class="info-img">
           <img v-if="activeImage" :src="activeImage" alt="景點圖片" />
         </div>
@@ -110,10 +156,8 @@ onMounted(() => {
         </ul>
       </div>
 
-      <!-- **右側資訊區塊** -->
-      <!-- <div class="image-area">
-        <img v-if="activeImage" :src="activeImage" alt="景點圖片" />
-      </div> -->
+      <!-- **右側區塊** -->
+
       <div class="map-area">
         <OpenlayerMapStory
           ref="mapRef"
@@ -139,6 +183,9 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .oplayerStory {
+  .select-area {
+    display: flex;
+  }
   .story {
     display: flex;
     width: 100%;

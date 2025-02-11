@@ -191,7 +191,7 @@ const clearHandle = () => {
   mapRef.value.updateSites(heritageSites.value);
   mapRef.value.flyTo(heritageSites.value[0].coords);
   activeImage.value = heritageSites.value[0].image;
-  activeImageList.value = [];
+  activeImageList.value = heritageSites.value[0].images;
 };
 
 watch(
@@ -207,7 +207,7 @@ watch(
         mapRef.value.updateSites(heritageSites.value);
         mapRef.value.flyTo(heritageSites.value[0].coords);
         activeImage.value = heritageSites.value[0].image;
-        activeImageList.value = [];
+        activeImageList.value = heritageSites.value[0].images;
       } else {
         //沒有資料 回到預設值
         alert("沒有資料");

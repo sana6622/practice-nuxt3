@@ -76,9 +76,10 @@ const handleFileUpload = (event) => {
       name: row[1] || "",
       coords: row[2] ? JSON.parse(row[2]) : [],
       image: row[3] || "",
-      icon: row[4] || "",
-      bgc: row[5] || "",
-      des: row[6],
+      images: row[4] ? row[4].split(",") : [], // 新增多圖片位置解析
+      icon: row[5] || "",
+      bgc: row[6] || "",
+      des: row[7] || "",
     }));
 
     // 更新 Pinia
@@ -131,24 +132,25 @@ const addItem = (newItem) => {
   console.log("pina", store.tables["group1"]);
 };
 
-const updateItem = (newItem) => {
-  verify(newItem);
-  const items = store.tables["group1"]; // 取得當前的資料陣列
-  const index = items.findIndex((item) => item.id === newItem.id); // 找到對應 ID 的索引
-  newItem.coords = Array.isArray(newItem.coords)
-    ? newItem.coords
-    : JSON.parse(newItem.coords);
+// const updateItem = (newItem) => {
+//   console.log("✅ 更新後的 Pinia store111:", store.tables[props.storeKey]);
+//   verify(newItem);
+//   const items = store.tables["group1"]; // 取得當前的資料陣列
+//   const index = items.findIndex((item) => item.id === newItem.id); // 找到對應 ID 的索引
+//   newItem.coords = Array.isArray(newItem.coords)
+//     ? newItem.coords
+//     : JSON.parse(newItem.coords);
 
-  if (index !== -1) {
-    // 更新該筆資料
-    items[index] = { ...newItem };
-    store.setItems("group1", [...items]); // 觸發 Pinia 更新
+//   if (index !== -1) {
+//     // 更新該筆資料
+//     items[index] = { ...newItem };
+//     store.setItems("group1", [...items]); // 觸發 Pinia 更新
 
-    console.log("✅ 已更新項目:", newItem);
-  } else {
-    console.warn("⚠️ 找不到對應 ID，無法更新");
-  }
-};
+//     console.log("✅ 已更新項目:", newItem);
+//   } else {
+//     console.warn("⚠️ 找不到對應 ID，無法更新");
+//   }
+// };
 
 // 刪除項目
 const deleteItem = (item) => {
@@ -200,7 +202,6 @@ onMounted(() => {
       :fields="tableFields"
       :modelValue="selectedItem"
       @add-item="addItem"
-      @update-item="updateItem"
     />
 
     <div class="hit">

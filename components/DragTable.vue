@@ -21,9 +21,13 @@ const onDragStart = (index) => {
 };
 
 const onDrop = (index) => {
+  console.log(11111);
   const draggedItem = tableItems.value.splice(draggedIndex, 1)[0];
   tableItems.value.splice(index, 0, draggedItem);
   draggedIndex = null;
+  // **更新 Pinia 狀態**
+  store.setItems(props.storeKey, [...tableItems.value]);
+  console.log("✅ 更新後的 Pinia store:", store.tables[props.storeKey]);
   emit("update-items", props.storeKey, [...tableItems.value]); // 通知父層更新資料
 };
 

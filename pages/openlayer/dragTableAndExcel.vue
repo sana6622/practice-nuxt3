@@ -84,7 +84,7 @@ const handleFileUpload = (event) => {
 
     // 更新 Pinia
     store.setItems("group1", formattedData);
-    console.log("pina", store.getItems("group1", formattedData));
+
     console.log("已更新 Pinia:", store.tables["group1"]);
   };
 };

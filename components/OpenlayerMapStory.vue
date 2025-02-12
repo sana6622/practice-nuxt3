@@ -18,12 +18,14 @@ import {
   Circle as CircleStyle,
 } from "ol/style.js";
 import LineString from "ol/geom/LineString.js";
-
+import { createEmpty, extend, getWidth, getHeight } from "ol/extent";
 import { getIconPathById } from "@/constants/icons";
 import { getIconColor } from "@/constants/color";
+import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
 
 const { ordinaryMap, dmaps, urbanLandZone, streetMap, landsect } =
   useLayerData();
+const { width } = useWindowSize(); //監聽視窗大小的變化
 
 // **Props：接收父層傳來的景點資訊與當前選中點**
 const props = defineProps({
@@ -268,10 +270,89 @@ const clusterStyle = (feature) => {
   }
 };
 
+// 定義群聚點擊事件的處理函式
+const handleFeatureClick = (event) => {
+  if (!mapInstance.value) return;
+
+  mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
+    let properties = feature.getProperties();
+
+    if (properties.features && properties.features.length > 1) {
+      // **傳遞群聚內的標記**
+      expandCluster(properties.features);
+    } else if (properties.features && properties.features.length == 1) {
+      // **這是單個標記**
+      const firstFeature = properties.features[0]; // 取第一個 feature
+      const firstFeatureProps = firstFeature.getProperties(); // 再取 properties
+      const iconName = firstFeatureProps.name;
+      const coords = firstFeature.getGeometry().getCoordinates();
+
+      mapInstance.value.getView().animate({
+        center: coords,
+        zoom: 18,
+        duration: 500,
+        maxZoom: 20,
+      });
+      emit("select-site", iconName); // 傳遞點擊的 Icon 名稱給父層
+    }
+  });
+};
+
+// **點擊群聚後展開**
+const expandCluster = (clusterFeatures) => {
+  if (!mapInstance.value) return;
+
+  const view = mapInstance.value.getView();
+
+  if (clusterFeatures.length === 1) {
+    // **只剩一個標記，不再放大**
+    console.log("✅ 只剩一個標記，停止放大");
+    return;
+  }
+
+  // 取得所有標記的座標
+  const coordinates = clusterFeatures.map((f) =>
+    f.getGeometry().getCoordinates()
+  );
+
+  // 計算標記的 **最小範圍**
+  const extent = createEmpty();
+  coordinates.forEach((coord) =>
+    extend(extent, [coord[0], coord[1], coord[0], coord[1]])
+  );
+  let padding;
+
+  if (width.value < 768) {
+    padding = [0, 0, 0, 0];
+  } else {
+    padding = [200, 200, 200, 200];
+  }
+
+  // **調整視野**，讓這些標記顯示得更明顯
+  view.fit(extent, {
+    duration: 600, //轉場時間
+    padding: padding, // 避免標記太貼近邊界
+    maxZoom: 20, // 限制最大縮放
+  });
+
+  console.log(`🔍 放大視野，包含 ${clusterFeatures.length} 個標記`);
+};
+
+// 📌 將 `handleFeatureClick` 綁定到地圖點擊事件
+const registerClickEvent = () => {
+  if (!mapInstance.value) return;
+
+  // **先移除舊的監聽，避免重複**
+  mapInstance.value.un("singleclick", handleFeatureClick);
+
+  // **重新綁定點擊事件**
+  mapInstance.value.on("singleclick", handleFeatureClick);
+};
+
 // **飛到指定景點**
 const flyTo = (coords) => {
   mapInstance.value.getView().animate({
-    center: fromLonLat(coords),
+    center: fromLonLat(coords), // 轉成 EPSG:3857
     zoom: 18,
     duration: 500,
     maxZoom: 20, //限制最大可放大的程度，如果不設定會需要處理cors問題
@@ -327,23 +408,26 @@ const updateSites = (newSites) => {
 
 onMounted(() => {
   initMap();
+  //綁定群聚點擊事件
+  registerClickEvent();
+
   //點擊Icon 取得icon的name 傳到父層
-  mapInstance.value.on("singleclick", (event) => {
-    mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
-      let properties = feature.getProperties();
+  // mapInstance.value.on("singleclick", (event) => {
+  //   mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
+  //     let properties = feature.getProperties();
 
-      if (properties.features) {
-        const firstFeature = properties.features[0]; // 取第一個 feature
-        properties = firstFeature.getProperties(); // 重新取 properties
-      }
+  //     if (properties.features) {
+  //       const firstFeature = properties.features[0]; // 取第一個 feature
+  //       properties = firstFeature.getProperties(); // 重新取 properties
+  //     }
 
-      // **確保 styleType 存在**
-      if (properties.styleType === "icon") {
-        console.log("✅ 點擊了 Icon:", properties.name);
-        emit("select-site", properties.name);
-      }
-    });
-  });
+  //     // **確保 styleType 存在**
+  //     if (properties.styleType === "icon") {
+  //       console.log("✅ 點擊了 Icon:", properties.name);
+  //       emit("select-site", properties.name);
+  //     }
+  //   });
+  // });
 });
 // 定義 emit 事件，讓父層接收點擊結果
 const emit = defineEmits(["select-site"]);

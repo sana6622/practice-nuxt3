@@ -329,7 +329,11 @@ onMounted(() => {
     </div>
     <div class="hit">
       <p>使用檔案: components/OpenlayerMapStory.vue</p>
-      <p>安裝:npm install ol</p>
+      <p>安裝:npm install ol (openlayer)</p>
+      <p>
+        安裝:npm install @vueuse/core (其中一個功能 useWindowSize
+        監聽視窗大小的變化)
+      </p>
       <p>功能:</p>
       <ul>
         <li>hover左側景點時，地圖會移動到對應景點</li>

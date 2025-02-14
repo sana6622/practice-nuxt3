@@ -43,6 +43,7 @@ const baseLayers = [
   { label: "衛星地圖", value: esriImagery },
   { label: "預設地圖", value: null }, // 回到 ordinaryMap
 ];
+const measurementResult = ref("");
 
 // **滑鼠進入時，更新地圖與圖片**
 const hoverLocation = (site) => {
@@ -194,6 +195,20 @@ const clearHandle = () => {
   activeImageList.value = heritageSites.value[0].images;
 };
 
+//測量
+const startMeasure = (type) => {
+  mapRef.value.startMeasure(type);
+};
+
+const clearMeasure = () => {
+  mapRef.value.clearMeasurements();
+};
+
+const updateMeasurement = (result) => {
+  measurementResult.value = result;
+};
+//////
+
 watch(
   () => selectIcon.value,
   (newIconId) => {
@@ -241,9 +256,13 @@ onMounted(() => {
       <button @click="togglePaths">切換線條顯示</button>
       <button @click="toggleOverLayer(dmaps, '地籍圖')">切換地籍圖</button>
       <button @click="toggleOverLayer(landsect, '段籍圖')">切換段籍圖</button>
+      <button @click="startMeasure('length')">測量長度</button>
+      <button @click="startMeasure('area')">測量面積</button>
+      <button @click="clearMeasure">清空測量</button>
 
       <p>icon:{{ showIcon ? "顯示" : "不顯示" }}</p>
       <p>線條:{{ showPath ? "顯示" : "不顯示" }}</p>
+      <p>長度顯示: {{ measurementResult }}</p>
       <div class="select-area">
         <p>底圖選擇:</p>
         <el-select v-model="selectedBaseLayer" @change="setBaseLayer">
@@ -324,6 +343,7 @@ onMounted(() => {
           ref="mapRef"
           :heritageSites="heritageSites"
           @select-site="scrollToSite"
+          @update-measurement="updateMeasurement"
         />
       </div>
     </div>

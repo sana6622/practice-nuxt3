@@ -18,7 +18,13 @@ import {
   Circle as CircleStyle,
 } from "ol/style.js";
 import LineString from "ol/geom/LineString.js";
-import { createEmpty, extend, getWidth, getHeight } from "ol/extent";
+import { createEmpty, extend, getWidth, getHeight } from "ol/extent"; //群聚展開
+
+// 🔹 **測量功能相關 Import**
+import Draw from "ol/interaction/Draw.js"; // 📌 允許地圖上繪製線條
+import Overlay from "ol/Overlay.js"; // 📌 讓測量距離顯示在地圖上
+import { getLength, getArea } from "ol/sphere.js"; // 📌計算線長與面積
+
 import { getIconPathById } from "@/constants/icons";
 import { getIconColor } from "@/constants/color";
 import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
@@ -43,6 +49,28 @@ const tamsuiCenter = fromLonLat([121.44572903840833, 25.16787143460989]); // 預
 const heritageSites = ref([...props.heritageSites]);
 const showIcons = ref(true);
 const showPaths = ref(true);
+
+const measureSource = new VectorSource(); // 📏 用來存放測量的圖形
+
+//測量樣式
+const measureLayer = new VectorLayer({
+  source: measureSource,
+  style: new Style({
+    stroke: new Stroke({
+      color: "rgba(255, 0, 0, 0.8)", // 紅色測量線
+      width: 2,
+      lineDash: [10, 5], // 虛線樣式
+    }),
+    fill: new Fill({
+      color: "rgba(255, 0, 0, 0.3)", // 測量區域填充顏色
+    }),
+  }),
+});
+const drawInteraction = ref(null); // 📏目前的繪製工具
+const measureTooltip = ref(null); // 📏 測量結果的 tooltip
+const measureTooltipElement = ref(null); // 📏 測量 tooltip 的 DOM 元素
+const measureTooltips = ref([]); // 📏 存儲所有 Tooltip
+
 // **初始化地圖**
 const initMap = () => {
   const layers = [
@@ -406,11 +434,135 @@ const updateSites = (newSites) => {
   addHeritageSites(); // 重新繪製標示
 };
 
+//初始化測量工具
+const initMeasureTool = () => {
+  mapInstance.value.addLayer(measureLayer); // 📏 新增測量圖層
+};
+
+//測量
+const startMeasure = (type) => {
+  // ✅ 先清除所有測量數據
+  clearMeasurements();
+
+  // ✅ 確保 `drawInteraction` 被移除，防止測量模式錯亂
+  if (drawInteraction.value) {
+    mapInstance.value.removeInteraction(drawInteraction.value);
+    drawInteraction.value = null;
+  }
+
+  // ✅ 設定測量類型
+  let measureType = type === "area" ? "Polygon" : "LineString";
+
+  drawInteraction.value = new Draw({
+    source: measureSource,
+    type: measureType,
+    style: new Style({
+      stroke: new Stroke({
+        color: "rgba(255, 0, 0, 0.8)",
+        width: 2,
+        lineDash: [10, 5],
+      }),
+      fill: new Fill({
+        color: "rgba(255, 0, 0, 0.3)",
+      }),
+    }),
+  });
+
+  mapInstance.value.addInteraction(drawInteraction.value);
+
+  drawInteraction.value.on("drawstart", (evt) => {
+    let sketch = evt.feature;
+    let tooltipData = createMeasureTooltip();
+    measureTooltips.value.push(tooltipData.measureTooltip);
+
+    let tooltipElement = tooltipData.tooltipElement;
+
+    sketch.getGeometry().on("change", (event) => {
+      let geom = event.target;
+      let output = type === "area" ? formatArea(geom) : formatLength(geom);
+      tooltipElement.innerHTML = `📏 ${output}`;
+      tooltipData.measureTooltip.setPosition(geom.getLastCoordinate());
+
+      emit("update-measurement", output); // 🚀 傳遞數據到父層
+    });
+  });
+
+  drawInteraction.value.on("drawend", (evt) => {
+    let geom = evt.feature.getGeometry();
+    let output = type === "area" ? formatArea(geom) : formatLength(geom);
+
+    let lastTooltip = measureTooltips.value[measureTooltips.value.length - 1];
+    lastTooltip.getElement().innerHTML = `📏 ${output}`;
+
+    if (type === "area") {
+      lastTooltip.setPosition(geom.getInteriorPoint().getCoordinates());
+    } else {
+      lastTooltip.setPosition(geom.getLastCoordinate());
+    }
+
+    emit("update-measurement", output); // 🚀 確保最後的數據傳遞到父層
+  });
+};
+
+const createMeasureTooltip = () => {
+  let tooltipElement = document.createElement("div");
+  tooltipElement.className = "ol-tooltip ol-tooltip-measure";
+  tooltipElement.style.backgroundColor = "rgba(255, 255, 255, 0.7)";
+  tooltipElement.style.padding = "5px";
+  tooltipElement.style.borderRadius = "4px";
+  tooltipElement.style.color = "#000";
+
+  let measureTooltip = new Overlay({
+    element: tooltipElement,
+    offset: [0, -15],
+    positioning: "bottom-center",
+  });
+
+  mapInstance.value.addOverlay(measureTooltip); // 這裡要確保 mapInstance.value 不是 null
+
+  return { measureTooltip, tooltipElement };
+};
+
+const clearMeasurements = () => {
+  measureSource.clear();
+
+  // ✅ 確保所有 tooltip 都被移除
+  measureTooltips.value.forEach((tooltip) => {
+    mapInstance.value.removeOverlay(tooltip);
+  });
+  measureTooltips.value = [];
+
+  // ✅ 移除舊的測量交互工具
+  if (drawInteraction.value) {
+    mapInstance.value.removeInteraction(drawInteraction.value);
+    drawInteraction.value = null;
+  }
+
+  emit("update-measurement", ""); // 🚀 清除時將長度設為空
+};
+
+//測量長度
+
+const formatLength = (line) => {
+  let length = getLength(line);
+  return length > 1000
+    ? (length / 1000).toFixed(2) + " km"
+    : length.toFixed(2) + " m";
+};
+
+// 測量面積
+const formatArea = (polygon) => {
+  let area = getArea(polygon);
+  return area > 10000
+    ? (area / 1000000).toFixed(2) + " km²"
+    : area.toFixed(2) + " m²";
+};
+
 onMounted(() => {
   initMap();
   //綁定群聚點擊事件
   registerClickEvent();
-
+  initMeasureTool(); // 📏 初始化測量工具
   //點擊Icon 取得icon的name 傳到父層
   // mapInstance.value.on("singleclick", (event) => {
   //   mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
@@ -430,7 +582,7 @@ onMounted(() => {
   // });
 });
 // 定義 emit 事件，讓父層接收點擊結果
-const emit = defineEmits(["select-site"]);
+const emit = defineEmits(["select-site", "update-measurement"]);
 
 // **暴露方法供父層 (`OpenlayerBasic.vue`) 呼叫**
 defineExpose({
@@ -440,6 +592,8 @@ defineExpose({
   updateSites,
   // resetView,
   getMap: () => mapInstance.value, //為了新增圖層(如地籍圖)
+  startMeasure,
+  clearMeasurements,
 });
 </script>
 

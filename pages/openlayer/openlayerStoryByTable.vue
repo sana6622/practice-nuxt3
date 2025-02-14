@@ -45,6 +45,10 @@ const baseLayers = [
 ];
 const measurementResult = ref("");
 
+//定位功能
+const longitude = ref("121.41218480726137"); //經度
+const latitude = ref("25.18327793537947"); //緯度
+
 // **滑鼠進入時，更新地圖與圖片**
 const hoverLocation = (site) => {
   if (mapRef.value && mapRef.value.flyTo) {
@@ -209,6 +213,17 @@ const updateMeasurement = (result) => {
 };
 //////
 
+//定位點
+const setLocation = () => {
+  const lon = parseFloat(longitude.value);
+  const lat = parseFloat(latitude.value);
+  if (!isNaN(lon) && !isNaN(lat)) {
+    mapRef.value.setLocation(lon, lat);
+  } else {
+    alert("請輸入有效的經度和緯度");
+  }
+};
+
 watch(
   () => selectIcon.value,
   (newIconId) => {
@@ -260,33 +275,49 @@ onMounted(() => {
       <button @click="startMeasure('area')">測量面積</button>
       <button @click="clearMeasure">清空測量</button>
 
-      <p>icon:{{ showIcon ? "顯示" : "不顯示" }}</p>
-      <p>線條:{{ showPath ? "顯示" : "不顯示" }}</p>
-      <p>長度顯示: {{ measurementResult }}</p>
-      <div class="select-area">
-        <p>底圖選擇:</p>
-        <el-select v-model="selectedBaseLayer" @change="setBaseLayer">
-          <el-option
-            v-for="layer in baseLayers"
-            :key="layer.label"
-            :label="layer.label"
-            :value="layer.label"
-          ></el-option>
-        </el-select>
-        <el-button @click="clearBaseLayer()">清除篩選</el-button>
+      <div>
+        <span>icon:{{ showIcon ? "顯示" : "不顯示" }} || </span>
+        <span>線條:{{ showPath ? "顯示" : "不顯示" }} ||</span>
+        <span>測量結果: {{ measurementResult }}</span>
       </div>
-      <div class="select-area">
-        <p>景點類別:</p>
-        <el-select v-model="selectIcon" aria-placeholder="請選擇">
-          <el-option
-            :label="icon.name"
-            :value="icon.id"
-            v-for="icon in iconList"
-            :key="icon.id"
-            >{{ icon.name }}</el-option
-          >
-        </el-select>
-        <el-button @click="clearHandle()">清除篩選</el-button>
+      <div class="select-section">
+        <div class="select-area">
+          <p>底圖選擇:</p>
+          <el-select v-model="selectedBaseLayer" @change="setBaseLayer">
+            <el-option
+              v-for="layer in baseLayers"
+              :key="layer.label"
+              :label="layer.label"
+              :value="layer.label"
+            ></el-option>
+          </el-select>
+          <el-button @click="clearBaseLayer()">清除篩選</el-button>
+        </div>
+        <div class="select-area">
+          <p>景點類別:</p>
+          <el-select v-model="selectIcon" aria-placeholder="請選擇">
+            <el-option
+              :label="icon.name"
+              :value="icon.id"
+              v-for="icon in iconList"
+              :key="icon.id"
+              >{{ icon.name }}</el-option
+            >
+          </el-select>
+          <el-button @click="clearHandle()">清除篩選</el-button>
+        </div>
+      </div>
+      <div class="select-section">
+        <div class="select-area">
+          <p>經度:</p>
+          <el-input v-model="longitude" placeholder="輸入經度"></el-input>
+        </div>
+        <div class="select-area">
+          <p>緯度:</p>
+          <el-input v-model="latitude" placeholder="輸入緯度"></el-input>
+        </div>
+        <el-button @click="setLocation">設定定位點</el-button>
+        <el-button> 取消定位點</el-button>
       </div>
     </div>
     <div class="story">
@@ -368,9 +399,16 @@ onMounted(() => {
 
 <style lang="scss">
 .oplayerStory {
+  .select-section {
+    display: flex;
+    flex: 1;
+  }
   .select-area {
+    width: 50%;
     display: flex;
     align-items: center;
+
+    margin-right: 20px;
 
     gap: 10px;
     p {

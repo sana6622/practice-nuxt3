@@ -66,10 +66,23 @@ const measureLayer = new VectorLayer({
     }),
   }),
 });
+
 const drawInteraction = ref(null); // 📏目前的繪製工具
 const measureTooltip = ref(null); // 📏 測量結果的 tooltip
 const measureTooltipElement = ref(null); // 📏 測量 tooltip 的 DOM 元素
 const measureTooltips = ref([]); // 📏 存儲所有 Tooltip
+
+const locationSource = new VectorSource(); // 📍 存放定位點
+const locationLayer = new VectorLayer({
+  source: locationSource,
+  style: new Style({
+    image: new Icon({
+      anchor: [0.5, 1], // 控制圖示位置
+      src: "/image/mapIcon/location-mark.svg", // 你的標記圖片
+      scale: 2, // 縮放圖示大小
+    }),
+  }),
+});
 
 // **初始化地圖**
 const initMap = () => {
@@ -558,11 +571,39 @@ const formatArea = (polygon) => {
     : area.toFixed(2) + " m²";
 };
 
+//加入定位點
+const setLocation = (lon, lat) => {
+  if (!mapInstance.value) return;
+
+  const coords = fromLonLat([lon, lat]); // 轉換成地圖座標
+  locationSource.clear(); // 移除舊標記
+
+  const locationFeature = new Feature({
+    geometry: new Point(coords),
+  });
+
+  locationSource.addFeature(locationFeature);
+
+  // 確保標記圖層加入地圖
+  if (!mapInstance.value.getLayers().getArray().includes(locationLayer)) {
+    mapInstance.value.addLayer(locationLayer);
+  }
+
+  // 🚀 平滑移動到標記位置
+  mapInstance.value.getView().animate({
+    center: coords,
+    zoom: 18,
+    duration: 500,
+  });
+};
+
 onMounted(() => {
   initMap();
   //綁定群聚點擊事件
   registerClickEvent();
   initMeasureTool(); // 📏 初始化測量工具
+  mapInstance.value.addLayer(locationLayer); //加入定位點
+
   //點擊Icon 取得icon的name 傳到父層
   // mapInstance.value.on("singleclick", (event) => {
   //   mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
@@ -594,6 +635,7 @@ defineExpose({
   getMap: () => mapInstance.value, //為了新增圖層(如地籍圖)
   startMeasure,
   clearMeasurements,
+  setLocation,
 });
 </script>
 

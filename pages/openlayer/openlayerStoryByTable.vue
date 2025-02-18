@@ -57,6 +57,7 @@ const radius = ref(500); // 預設環域半徑 500 公尺
 const radius2 = ref(500);
 //點擊地圖打點
 const clickCoords = ref([]);
+const recordedCoords = ref([]);
 
 // **滑鼠進入時，更新地圖與圖片**
 const hoverLocation = (site) => {
@@ -220,7 +221,6 @@ const clearMeasure = () => {
 const updateMeasurement = (result) => {
   measurementResult.value = result;
 };
-//////
 
 //定位點
 const updateMapLocation = () => {
@@ -333,6 +333,29 @@ const removeClickSite = () => {
   mapRef.value.clearHandleMapClick();
   mapRef.value.clearCircleRange();
   clickCoords.value = [];
+};
+
+//多點紀錄
+const recordedSites = (sites) => {
+  console.log("recordedSites", sites);
+  recordedCoords.value = sites;
+};
+// **開始記錄**
+const startRecording = () => {
+  recordedCoords.value = [];
+  mapRef.value.startRecording(); // 呼叫子元件
+};
+
+// **結束記錄**
+const stopRecording = () => {
+  mapRef.value.stopRecording();
+  recordedCoords.value = [];
+};
+
+// **清除標記**
+const clearMarkers = () => {
+  mapRef.value.clearMarkers();
+  recordedSites.value = [];
 };
 
 watch(
@@ -478,6 +501,16 @@ onMounted(() => {
         <el-button @click="removeClickSiteCircleRange">清除環域</el-button>
         <el-button @click="removeClickSite">清除打點</el-button>
       </div>
+      <h4>多打點紀錄 (路徑使用)</h4>
+      <div class="select-section">
+        <el-button @click="startRecording">開起多點紀錄</el-button>
+        <el-button @click="stopRecording">清空記錄+關閉多點</el-button>
+        <ul>
+          <li v-for="(point, index) in recordedCoords" :key="index">
+            📍 點 {{ index + 1 }}：{{ point.lon }}, {{ point.lat }}
+          </li>
+        </ul>
+      </div>
     </div>
     <div class="story">
       <!-- **左邊區塊** -->
@@ -535,6 +568,7 @@ onMounted(() => {
           @select-site="scrollToSite"
           @update-measurement="updateMeasurement"
           @click-site="clickSite"
+          @recorded-sites="recordedSites"
         />
       </div>
     </div>

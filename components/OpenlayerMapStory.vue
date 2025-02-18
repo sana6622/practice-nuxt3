@@ -103,6 +103,21 @@ const clickPointLayer = new VectorLayer({
   }),
 });
 
+//點擊地圖後多點標記
+const recordedPoints = ref([]);
+const recordedPointSource = new VectorSource(); // **記錄模式的 Source**
+const recordedPointLayer = new VectorLayer({
+  source: clickPointSource,
+  style: new Style({
+    image: new Icon({
+      anchor: [0.5, 1],
+      src: "/image/mapIcon/location-mark.svg",
+      scale: 1.5,
+    }),
+  }),
+});
+const isRecording = ref(false);
+
 const compass = ref(null); // 指南針 DOM
 const compassRotation = ref(0); // 🔄 追蹤指南針的角度
 
@@ -777,19 +792,56 @@ const handleMapClick = (event) => {
   const lonLat = toLonLat(clickedCoordinate); // 轉換為經緯度
 
   console.log("點擊經緯度lonLat", lonLat);
-  // 清除舊標記
-  clickPointSource.clear();
+  if (isRecording.value) {
+    // **記錄模式：允許多個標記**
+
+    const clickFeature = new Feature({
+      geometry: new Point(clickedCoordinate),
+    });
+
+    clickPointSource.addFeature(clickFeature);
+    recordedPoints.value.push({
+      lon: lonLat[0].toFixed(5),
+      lat: lonLat[1].toFixed(5),
+    });
+    emit("recorded-sites", recordedPoints.value);
+  } else {
+    // **單點模式：清除舊點，新增新標記**
+    clickPointSource.clear();
+    const clickFeature = new Feature({
+      geometry: new Point(clickedCoordinate),
+    });
+
+    clickPointSource.addFeature(clickFeature);
+    emit("click-site", lonLat);
+  }
+  // // 清除舊標記
+  // clickPointSource.clear();
 
   // 新增點擊標記
-  const clickFeature = new Feature({
-    geometry: new Point(clickedCoordinate),
-  });
+  // const clickFeature = new Feature({
+  //   geometry: new Point(clickedCoordinate),
+  // });
 
-  clickPointSource.addFeature(clickFeature);
-  emit("click-site", lonLat);
+  // clickPointSource.addFeature(clickFeature);
+  // emit("click-site", lonLat);
 };
 const clearHandleMapClick = () => {
   clickPointSource.clear();
+};
+
+// **開始記錄**
+const startRecording = () => {
+  clickPointSource.clear(); //清空之前的其他點擊紀錄
+  recordedPoints.value = [];
+  isRecording.value = true;
+};
+
+// **停止記錄**
+const stopRecording = () => {
+  isRecording.value = false;
+  clickPointSource.clear();
+  recordedPoints.value = [];
 };
 
 //旋轉地圖
@@ -844,7 +896,12 @@ onMounted(() => {
 });
 
 // 定義 emit 事件，讓父層接收點擊結果
-const emit = defineEmits(["select-site", "update-measurement", "click-site"]);
+const emit = defineEmits([
+  "select-site",
+  "update-measurement",
+  "click-site",
+  "recorded-sites",
+]);
 
 // **暴露方法供父層 (`OpenlayerBasic.vue`) 呼叫**
 defineExpose({
@@ -861,6 +918,8 @@ defineExpose({
   drawCircleRange,
   clearCircleRange,
   clearHandleMapClick,
+  startRecording,
+  stopRecording,
 });
 </script>
 

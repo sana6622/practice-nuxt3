@@ -54,6 +54,9 @@ const address = ref("滬尾礮臺");
 const lonRange = ref("121.44550050003362"); //經度
 const latRange = ref("25.168811935403998"); //緯度
 const radius = ref(500); // 預設環域半徑 500 公尺
+const radius2 = ref(500);
+//點擊地圖打點
+const clickCoords = ref([]);
 
 // **滑鼠進入時，更新地圖與圖片**
 const hoverLocation = (site) => {
@@ -236,6 +239,7 @@ const removeLocation = () => {
   longitude.value = "";
   latitude.value = "";
 };
+
 // ⭐️ 地址轉換經緯度（Geocoding）
 const searchLocation = async () => {
   if (!address.value) {
@@ -296,6 +300,39 @@ const removeSetCircleRange = () => {
   lonRange.value = "";
   latRange.value = "";
   radius.value = "";
+};
+
+//點擊地圖任一點+環域
+const clickSite = (coords) => {
+  mapRef.value.clearCircleRange();
+  clickCoords.value = coords;
+};
+const clickSiteCircleRange = () => {
+  const rad = parseFloat(radius2.value);
+  if (!clickCoords.value.length) {
+    alert("請先點擊地圖任一點！");
+    return;
+  }
+  if (!isNaN(rad)) {
+    mapRef.value.drawCircleRange(
+      clickCoords.value[0],
+      clickCoords.value[1],
+      rad
+    );
+  } else {
+    alert("請輸入有效半徑！");
+  }
+  console.log(clickCoords.value[0], clickCoords.value[1]);
+  mapRef.value.drawCircleRange(clickCoords.value[0], clickCoords.value[1], rad);
+};
+const removeClickSiteCircleRange = () => {
+  mapRef.value.clearCircleRange();
+  radius2.value = "";
+};
+const removeClickSite = () => {
+  mapRef.value.clearHandleMapClick();
+  mapRef.value.clearCircleRange();
+  clickCoords.value = [];
 };
 
 watch(
@@ -423,6 +460,24 @@ onMounted(() => {
         <el-button @click="setCircleRange">設定環域範圍</el-button>
         <el-button @click="removeSetCircleRange">清除環域</el-button>
       </div>
+      <h4>點擊地圖任一點+環域</h4>
+      <div class="select-section">
+        <div class="select-area">
+          <p>經度:</p>
+          <span>{{ clickCoords[0] }}</span>
+        </div>
+        <div class="select-area">
+          <p>緯度:</p>
+          <span>{{ clickCoords[1] }}</span>
+        </div>
+        <div class="select-area">
+          <p>環域半徑 (公尺):</p>
+          <el-input v-model="radius2" placeholder="輸入半徑"></el-input>
+        </div>
+        <el-button @click="clickSiteCircleRange">設定環域範圍</el-button>
+        <el-button @click="removeClickSiteCircleRange">清除環域</el-button>
+        <el-button @click="removeClickSite">清除打點</el-button>
+      </div>
     </div>
     <div class="story">
       <!-- **左邊區塊** -->
@@ -479,6 +534,7 @@ onMounted(() => {
           :heritageSites="heritageSites"
           @select-site="scrollToSite"
           @update-measurement="updateMeasurement"
+          @click-site="clickSite"
         />
       </div>
     </div>

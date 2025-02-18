@@ -5,7 +5,7 @@ import OSM from "ol/source/OSM.js";
 import TileLayer from "ol/layer/Tile.js";
 import Point from "ol/geom/Point.js";
 import View from "ol/View.js";
-import { fromLonLat } from "ol/proj";
+import { fromLonLat, toLonLat } from "ol/proj";
 import Feature from "ol/Feature.js";
 import { Vector as VectorSource, Cluster } from "ol/source.js";
 import { Vector as VectorLayer } from "ol/layer.js";
@@ -89,6 +89,19 @@ const locationLayer = new VectorLayer({
 });
 
 const filteredPoints = ref([]); // 存放篩選後的景點資料
+
+//點擊地圖後標記
+const clickPointSource = new VectorSource(); // 存放點擊標記
+const clickPointLayer = new VectorLayer({
+  source: clickPointSource,
+  style: new Style({
+    image: new Icon({
+      anchor: [0.5, 1],
+      src: "/image/mapIcon/location-mark.svg",
+      scale: 1.5,
+    }),
+  }),
+});
 
 const compass = ref(null); // 指南針 DOM
 const compassRotation = ref(0); // 🔄 追蹤指南針的角度
@@ -566,7 +579,6 @@ const clearMeasurements = () => {
 };
 
 //測量長度
-
 const formatLength = (line) => {
   let length = getLength(line);
   return length > 1000
@@ -757,6 +769,28 @@ const showCurrentLocation = () => {
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 };
+// 點擊地圖上任一點 進行打點標記
+const handleMapClick = (event) => {
+  if (!mapInstance.value) return;
+
+  const clickedCoordinate = event.coordinate; // 取得點擊的地圖座標
+  const lonLat = toLonLat(clickedCoordinate); // 轉換為經緯度
+
+  console.log("點擊經緯度lonLat", lonLat);
+  // 清除舊標記
+  clickPointSource.clear();
+
+  // 新增點擊標記
+  const clickFeature = new Feature({
+    geometry: new Point(clickedCoordinate),
+  });
+
+  clickPointSource.addFeature(clickFeature);
+  emit("click-site", lonLat);
+};
+const clearHandleMapClick = () => {
+  clickPointSource.clear();
+};
 
 //旋轉地圖
 const rotateMap = (angle) => {
@@ -793,6 +827,10 @@ onMounted(() => {
 
   poiLayer.setZIndex(10); // 景點圖層在最上面
   circleLayer.setZIndex(5); // 環域圖層
+  clickPointLayer.setZIndex(10); // 📍 點擊標記圖層在最上面
+
+  mapInstance.value.on("singleclick", handleMapClick); // 📍 監聽地圖點擊事件
+  mapInstance.value.addLayer(clickPointLayer); // 📍 加入點擊標記圖層
 
   // **監聽地圖旋轉事件**
   compass.value = document.getElementById("compass");
@@ -804,8 +842,9 @@ onMounted(() => {
     });
   }
 });
+
 // 定義 emit 事件，讓父層接收點擊結果
-const emit = defineEmits(["select-site", "update-measurement"]);
+const emit = defineEmits(["select-site", "update-measurement", "click-site"]);
 
 // **暴露方法供父層 (`OpenlayerBasic.vue`) 呼叫**
 defineExpose({
@@ -821,6 +860,7 @@ defineExpose({
   clearLocation,
   drawCircleRange,
   clearCircleRange,
+  clearHandleMapClick,
 });
 </script>
 

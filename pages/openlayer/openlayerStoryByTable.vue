@@ -48,6 +48,12 @@ const measurementResult = ref("");
 //定位功能
 const longitude = ref("121.41218480726137"); //經度
 const latitude = ref("25.18327793537947"); //緯度
+const address = ref("滬尾礮臺");
+
+//環域功能
+const lonRange = ref("121.44550050003362"); //經度
+const latRange = ref("25.168811935403998"); //緯度
+const radius = ref(500); // 預設環域半徑 500 公尺
 
 // **滑鼠進入時，更新地圖與圖片**
 const hoverLocation = (site) => {
@@ -214,7 +220,7 @@ const updateMeasurement = (result) => {
 //////
 
 //定位點
-const setLocation = () => {
+const updateMapLocation = () => {
   const lon = parseFloat(longitude.value);
   const lat = parseFloat(latitude.value);
   if (!isNaN(lon) && !isNaN(lat)) {
@@ -222,6 +228,74 @@ const setLocation = () => {
   } else {
     alert("請輸入有效的經度和緯度");
   }
+};
+//清除定位點
+const removeLocation = () => {
+  console.log(1);
+  mapRef.value.clearLocation();
+  longitude.value = "";
+  latitude.value = "";
+};
+// ⭐️ 地址轉換經緯度（Geocoding）
+const searchLocation = async () => {
+  if (!address.value) {
+    alert("請輸入地址！");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        address.value
+      )}`
+    );
+    const data = await response.json();
+    console.log("地址轉經緯度", data);
+
+    if (data.length > 0) {
+      // latitude.value = data[0].lat;
+      // longitude.value = data[0].lon;
+
+      // ⭐️ 直接將結果傳給 `updateMapLocation`
+      mapRef.value.setLocation(data[0].lon, data[0].lat);
+    } else {
+      alert("找不到該地址！");
+    }
+  } catch (error) {
+    console.error("地址轉換失敗", error);
+    alert("無法獲取位置信息，請稍後再試！");
+  }
+};
+const removeSearchLocation = () => {
+  mapRef.value.clearLocation();
+  address.value = "";
+};
+
+//設定環域變數
+const setCircleRange = () => {
+  const lon = parseFloat(lonRange.value);
+  const lat = parseFloat(latRange.value);
+  const rad = parseFloat(radius.value);
+
+  if (!isNaN(lon) && !isNaN(lat)) {
+    mapRef.value.setLocation(lon, lat);
+  } else {
+    alert("請輸入有效的經度和緯度");
+    return;
+  }
+
+  if (!isNaN(lon) && !isNaN(lat) && !isNaN(rad)) {
+    mapRef.value.drawCircleRange(lon, lat, rad);
+  } else {
+    alert("請輸入有效半徑！");
+  }
+};
+const removeSetCircleRange = () => {
+  mapRef.value.clearLocation();
+  mapRef.value.clearCircleRange();
+  lonRange.value = "";
+  latRange.value = "";
+  radius.value = "";
 };
 
 watch(
@@ -307,6 +381,7 @@ onMounted(() => {
           <el-button @click="clearHandle()">清除篩選</el-button>
         </div>
       </div>
+      <h4>定位</h4>
       <div class="select-section">
         <div class="select-area">
           <p>經度:</p>
@@ -316,8 +391,37 @@ onMounted(() => {
           <p>緯度:</p>
           <el-input v-model="latitude" placeholder="輸入緯度"></el-input>
         </div>
-        <el-button @click="setLocation">設定定位點</el-button>
-        <el-button> 取消定位點</el-button>
+        <el-button @click="updateMapLocation">設定定位點</el-button>
+        <el-button @click="removeLocation"> 取消定位點</el-button>
+      </div>
+      <div class="select-section">
+        <div class="select-area">
+          <p>著名地標:</p>
+          <el-input v-model="address" placeholder="輸入著名地標"></el-input>
+        </div>
+
+        <el-button @click="searchLocation">設定定位點</el-button>
+        <el-button @click="removeSearchLocation"> 取消定位點</el-button>
+        <!-- <el-button @click="setCircleRange">設定環域範圍</el-button>
+        <el-button @click="clearCircle">清除環域</el-button> -->
+        <span>使用openstreetmap資料不太完整</span>
+      </div>
+      <h4>環域</h4>
+      <div class="select-section">
+        <div class="select-area">
+          <p>經度:</p>
+          <el-input v-model="lonRange" placeholder="輸入經度"></el-input>
+        </div>
+        <div class="select-area">
+          <p>緯度:</p>
+          <el-input v-model="latRange" placeholder="輸入緯度"></el-input>
+        </div>
+        <div class="select-area">
+          <p>環域半徑 (公尺):</p>
+          <el-input v-model="radius" placeholder="輸入半徑"></el-input>
+        </div>
+        <el-button @click="setCircleRange">設定環域範圍</el-button>
+        <el-button @click="removeSetCircleRange">清除環域</el-button>
       </div>
     </div>
     <div class="story">
@@ -392,6 +496,10 @@ onMounted(() => {
         <li>點與點之間會依序產生線條</li>
         <li>button調整圖層顯示(icon&線條)</li>
         <li>資料來源是table(回資料表可看到詳細資訊)</li>
+        <li>
+          使用這隻API "https://nominatim.openstreetmap.org/search?format=json"
+          取得 "著名地標 "的經緯度
+        </li>
       </ul>
     </div>
   </div>
@@ -399,22 +507,27 @@ onMounted(() => {
 
 <style lang="scss">
 .oplayerStory {
+  h4 {
+    margin: 0;
+    background-color: #beeccd;
+  }
   .select-section {
     display: flex;
-    flex: 1;
-  }
-  .select-area {
-    width: 50%;
-    display: flex;
     align-items: center;
-
-    margin-right: 20px;
-
-    gap: 10px;
-    p {
-      width: 90px;
+    flex: 1;
+    .select-area {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20px;
+      gap: 10px;
+      p {
+        width: 90px;
+      }
     }
   }
+
   .story {
     display: flex;
     width: 100%;

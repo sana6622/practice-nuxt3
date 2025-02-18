@@ -25,6 +25,10 @@ import Draw from "ol/interaction/Draw.js"; // 📌 允許地圖上繪製線條
 import Overlay from "ol/Overlay.js"; // 📌 讓測量距離顯示在地圖上
 import { getLength, getArea } from "ol/sphere.js"; // 📌計算線長與面積
 
+//環域
+import Circle from "ol/geom/Circle.js"; // 用來繪製環域圓形
+import { getDistance } from "ol/sphere"; // ✅ 用來計算經緯度距離
+
 import { getIconPathById } from "@/constants/icons";
 import { getIconColor } from "@/constants/color";
 import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
@@ -84,6 +88,11 @@ const locationLayer = new VectorLayer({
   }),
 });
 
+const filteredPoints = ref([]); // 存放篩選後的景點資料
+
+const compass = ref(null); // 指南針 DOM
+const compassRotation = ref(0); // 🔄 追蹤指南針的角度
+
 // **初始化地圖**
 const initMap = () => {
   const layers = [
@@ -103,7 +112,9 @@ const initMap = () => {
       zoom: 18,
       projection: "EPSG:3857",
       maxZoom: 20, //限制最大可放大的程度，如果不設定會需要處理cors問題
+      rotation: 0, //地圖旋轉
     }),
+    controls: [], //地圖旋轉控制項
   });
   mapInstance.value.addLayer(lineLayer);
   const vectorLayer = new VectorLayer({
@@ -597,30 +608,201 @@ const setLocation = (lon, lat) => {
   });
 };
 
+//清除定位點
+const clearLocation = () => {
+  locationSource.clear();
+};
+
+//**建立環域圖型 */
+const circleSource = new VectorSource();
+const circleLayer = new VectorLayer({
+  source: circleSource,
+  style: new Style({
+    stroke: new Stroke({
+      color: "rgba(0, 0, 255, 0.8)", // 藍色邊框
+      width: 2,
+      lineDash: [10, 5], // 虛線樣式
+    }),
+    fill: new Fill({
+      color: "rgba(0, 0, 255, 0.2)", // 淡藍色填充
+    }),
+  }),
+});
+const drawCircleRange = (lon, lat, radius) => {
+  const center = fromLonLat([lon, lat]); // 轉換經緯度到地圖座標
+
+  // **清除舊的環域範圍**
+  circleSource.clear();
+
+  // **建立新圓形**
+  const circleFeature = new Feature({
+    geometry: new Circle(center, radius), // OpenLayers 的 Circle 幾何
+  });
+
+  circleSource.addFeature(circleFeature);
+  // **篩選景點**
+  filterPOIWithinRange(lon, lat, radius);
+};
+const clearCircleRange = () => {
+  circleSource.clear(); // 清除所有圓形
+  poiSource.clear();
+};
+
+/*建立環域景點*/
+const poiSource = new VectorSource(); // ✅ 景點標記來源
+// **景點標記圖層**
+const poiLayer = new VectorLayer({
+  source: poiSource,
+  style: (feature) => {
+    return [
+      // 🔵 背景圓圈
+      new Style({
+        image: new CircleStyle({
+          radius: 12, // 控制圓圈大小
+          fill: new Fill({ color: "rgba(255, 223, 0, 0.8)" }), // 黃色背景
+          stroke: new Stroke({ color: "#FFD700", width: 2 }), // 金色邊框
+        }),
+      }),
+
+      // ⭐️ 景點標記 Icon
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          src: "/image/mapIcon/star.svg",
+          scale: 1.2,
+        }),
+      }),
+    ];
+  },
+});
+// 🚀 **取得台灣觀光景點 Open Data**
+const tourismData = ref([]); // 存放觀光景點資料
+const fetchTourismData = async () => {
+  try {
+    const response = await fetch(
+      "https://tdx.transportdata.tw/api/basic/v2/Tourism/ScenicSpot?%24format=JSON"
+    );
+    const data = await response.json();
+    tourismData.value = data.filter(
+      (spot) =>
+        spot.Position && spot.Position.PositionLon && spot.Position.PositionLat
+    ); // 確保景點有經緯度
+    console.log("✅ 取得景點資料:", tourismData.value);
+  } catch (error) {
+    console.error("❌ 取得景點資料失敗:", error);
+  }
+};
+// 🎯 **篩選環域內的景點**
+const filterPOIWithinRange = (lon, lat, radius) => {
+  poiSource.clear(); // 清除舊標記
+  const centerCoords = [lon, lat]; // 原始經緯度
+
+  tourismData.value.forEach((spot) => {
+    const spotLon = spot.Position.PositionLon;
+    const spotLat = spot.Position.PositionLat;
+    const distance = getDistance(centerCoords, [spotLon, spotLat]); // 計算距離
+
+    if (distance <= radius) {
+      // **該景點在範圍內**
+      filteredPoints.value.push({
+        ...spot,
+        distance: distance.toFixed(2), // 追加距離資訊（保留 2 位小數）
+      });
+
+      const spotCoords = fromLonLat([spotLon, spotLat]);
+      const poiFeature = new Feature({
+        geometry: new Point(spotCoords),
+        name: spot.ScenicSpotName,
+      });
+
+      poiSource.addFeature(poiFeature);
+    }
+  });
+  console.log("filteredPoints", filteredPoints.value);
+};
+
+//取得目前位置
+const showCurrentLocation = () => {
+  if (!navigator.geolocation) {
+    alert("❌ 你的瀏覽器不支援 Geolocation API");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      const coords = fromLonLat([longitude, latitude]);
+
+      // 清除舊標記
+      locationSource.clear();
+
+      // 新增定位標記
+      const locationFeature = new Feature({
+        geometry: new Point(coords),
+      });
+
+      locationSource.addFeature(locationFeature);
+
+      // 平滑移動到當前位置
+      mapInstance.value.getView().animate({
+        center: coords,
+        zoom: 16,
+        duration: 800,
+      });
+    },
+    (error) => {
+      console.error("❌ 獲取位置失敗:", error);
+      alert("無法獲取位置，請確認你已允許位置存取");
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+};
+
+//旋轉地圖
+const rotateMap = (angle) => {
+  if (!mapInstance.value) return;
+  const view = mapInstance.value.getView();
+  const newRotation = view.getRotation() + angle;
+
+  view.setRotation(view.getRotation() + angle); // ✅ 旋轉地圖
+  compassRotation.value = newRotation * (180 / Math.PI); // 📌 更新指南針角度 (轉換成角度)
+  updateCompass();
+};
+
+const resetRotation = () => {
+  if (!mapInstance.value) return;
+  mapInstance.value.getView().setRotation(0); // ✅ 重置角度
+  compassRotation.value = 0; // 📌 重置指南針角度
+  updateCompass();
+};
+const updateCompass = () => {
+  if (compass.value) {
+    compass.value.style.transform = `rotate(${compassRotation.value}deg)`; // 📌 套用旋轉
+  }
+};
+
 onMounted(() => {
   initMap();
   //綁定群聚點擊事件
   registerClickEvent();
   initMeasureTool(); // 📏 初始化測量工具
+  fetchTourismData();
   mapInstance.value.addLayer(locationLayer); //加入定位點
+  mapInstance.value.addLayer(poiLayer); // 加入環域景點圖層
+  mapInstance.value.addLayer(circleLayer); // 加入環域範圍圖層
 
-  //點擊Icon 取得icon的name 傳到父層
-  // mapInstance.value.on("singleclick", (event) => {
-  //   mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
-  //     let properties = feature.getProperties();
+  poiLayer.setZIndex(10); // 景點圖層在最上面
+  circleLayer.setZIndex(5); // 環域圖層
 
-  //     if (properties.features) {
-  //       const firstFeature = properties.features[0]; // 取第一個 feature
-  //       properties = firstFeature.getProperties(); // 重新取 properties
-  //     }
-
-  //     // **確保 styleType 存在**
-  //     if (properties.styleType === "icon") {
-  //       console.log("✅ 點擊了 Icon:", properties.name);
-  //       emit("select-site", properties.name);
-  //     }
-  //   });
-  // });
+  // **監聽地圖旋轉事件**
+  compass.value = document.getElementById("compass");
+  if (mapInstance.value) {
+    mapInstance.value.getView().on("change:rotation", () => {
+      compassRotation.value =
+        -mapInstance.value.getView().getRotation() * (180 / Math.PI);
+      updateCompass();
+    });
+  }
 });
 // 定義 emit 事件，讓父層接收點擊結果
 const emit = defineEmits(["select-site", "update-measurement"]);
@@ -636,16 +818,42 @@ defineExpose({
   startMeasure,
   clearMeasurements,
   setLocation,
+  clearLocation,
+  drawCircleRange,
+  clearCircleRange,
 });
 </script>
 
 <template>
-  <div ref="mapContainer" class="map-container"></div>
+  <div ref="mapContainer" class="map-container">
+    <button @click="rotateMap(-Math.PI / 4)">45°逆時針轉 (↺)</button>
+    <button @click="rotateMap(Math.PI / 4)">45°順時針轉 (↻)</button>
+    <button @click="resetRotation">重置 (⟲)</button>
+
+    <div id="compass" class="compass"></div>
+    <button @click="showCurrentLocation">
+      <img src="../assets/img/home.svg" alt="" />
+    </button>
+  </div>
 </template>
 
-<style scoped>
+<style lang="scss">
 .map-container {
   width: 100%;
   height: 100%;
+  position: relative;
+  .compass {
+    position: absolute;
+    outline: 1px solid red;
+    z-index: 99;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    background: url("/assets/img/compass.svg") no-repeat center;
+    background-size: contain;
+    transform-origin: center;
+    transition: transform 0.3s ease-in-out;
+  }
 }
 </style>

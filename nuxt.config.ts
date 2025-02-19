@@ -4,6 +4,7 @@ import type { NuxtConfig } from "nuxt/schema";
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
+
   vite: {
     plugins: [],
   },
@@ -47,10 +48,21 @@ export default defineNuxtConfig({
       },
     },
   },
-  modules: ["@pinia/nuxt", "@vee-validate/nuxt", "nuxt-swiper", "@element-plus/nuxt", "@nuxt/icon"],
+  modules: [
+    "@pinia/nuxt",
+    "@vee-validate/nuxt",
+    "nuxt-swiper",
+    "@element-plus/nuxt",
+    "@nuxt/icon",
+  ],
   css: ["@/assets/all.scss"],
 
-  plugins: ["~/plugins/formatDatePlugin.js", "~/plugins/element-plus.js",],
+  plugins: [
+    "~/plugins/formatDatePlugin.js",
+    "~/plugins/element-plus.js",
+
+  ],
+
 
   veeValidate: {
     componentNames: {

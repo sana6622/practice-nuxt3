@@ -48,7 +48,11 @@ const measurementResult = ref("");
 //定位功能
 const longitude = ref("121.41218480726137"); //經度
 const latitude = ref("25.18327793537947"); //緯度
-const address = ref("滬尾礮臺");
+const landmark = ref("滬尾礮臺");
+const address = ref("新北市淡水區中正路229-9號");
+const searchFuzzyAddress = ref("中正路");
+const searchFuzzyNum = ref(10);
+const searchFuzzyResults = ref([]);
 
 //環域功能
 const lonRange = ref("121.44550050003362"); //經度
@@ -97,7 +101,7 @@ const togglePaths = () => {
   mapRef.value.updatePaths(showPath.value);
 };
 
-// 📌 地籍圖切換功能
+// 📌 ***地籍圖切換功能******************
 // 透過取得 OpenLayers 地圖實例 (`getMap()`) 來操作地圖圖層
 // 使用以下 API 來控制圖層顯示：
 // - `getLayers()` → 取得所有圖層
@@ -116,7 +120,7 @@ const toggleOverLayer = (layer, layerName) => {
   const currentVisibility = layer.getVisible();
 
   if (!currentVisibility) {
-    // **當前為隱藏狀態，啟用圖層並加入地圖**
+    // 當前為隱藏狀態，啟用圖層並加入地圖
     layer.setVisible(true);
     layer.setZIndex(10);
 
@@ -126,7 +130,7 @@ const toggleOverLayer = (layer, layerName) => {
 
     console.log(`✅ 已顯示圖層 (${layerName})`);
   } else {
-    // **當前為顯示狀態，隱藏圖層並從地圖移除**
+    //當前為顯示狀態，隱藏圖層並從地圖移除
     layer.setVisible(false);
 
     if (map.getLayers().getArray().includes(layer)) {
@@ -209,7 +213,7 @@ const clearHandle = () => {
   activeImageList.value = heritageSites.value[0].images;
 };
 
-//測量
+//**測量***
 const startMeasure = (type) => {
   mapRef.value.startMeasure(type);
 };
@@ -240,17 +244,17 @@ const removeLocation = () => {
   latitude.value = "";
 };
 
-// ⭐️ 地址轉換經緯度（Geocoding）
+// ****地標轉換經緯度（Geocoding）*******
 const searchLocation = async () => {
-  if (!address.value) {
-    alert("請輸入地址！");
+  if (!landmark.value) {
+    alert("請輸入地標！");
     return;
   }
 
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        address.value
+        landmark.value
       )}`
     );
     const data = await response.json();
@@ -260,7 +264,6 @@ const searchLocation = async () => {
       // latitude.value = data[0].lat;
       // longitude.value = data[0].lon;
 
-      // ⭐️ 直接將結果傳給 `updateMapLocation`
       mapRef.value.setLocation(data[0].lon, data[0].lat);
     } else {
       alert("找不到該地址！");
@@ -272,10 +275,108 @@ const searchLocation = async () => {
 };
 const removeSearchLocation = () => {
   mapRef.value.clearLocation();
-  address.value = "";
+  landmark.value = "";
 };
 
-//設定環域變數
+//***地址搜尋+轉換經緯度***********
+const searchAddress = async () => {
+  console.log(
+    "searchAddress",
+    address.value,
+    `https://api.nlsc.gov.tw/idc/TextQueryMap/${address.value}`
+  );
+  if (!address.value) {
+    alert("請輸入地址！");
+    return;
+  }
+  try {
+    const response = await fetch(
+      `https://api.nlsc.gov.tw/idc/TextQueryMap/${encodeURIComponent(
+        address.value
+      )}`
+    );
+
+    console.log("response", response);
+    const responseText = await response.text(); // 取得回應的 XML 文字
+
+    // 🔹 解析 XML
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(responseText, "application/xml");
+
+    // 🔹 取得 `<LOCATION>` 節點
+    const locationNode = xmlDoc.querySelector("LOCATION");
+    if (!locationNode) {
+      alert("找不到該地址對應的經緯度");
+      return;
+    }
+    // 🔹 解析經緯度
+    const locationText = locationNode.textContent;
+    const [lon, lat] = locationText.split(",").map(parseFloat);
+    console.log("lon, lat", lon, lat);
+    mapRef.value.setLocation(lon, lat);
+  } catch (error) {
+    console.error("地址轉換失敗", error);
+    alert("無法獲取位置信息，請稍後再試！");
+  }
+};
+
+//**地址模糊搜尋************
+const searchFuzzy = async () => {
+  console.log(
+    "searchAddress",
+    address.value,
+    `https://api.nlsc.gov.tw/idc/TextQueryMap/${searchFuzzyAddress.value}/${searchFuzzyNum.value}`
+  );
+  if (!address.value) {
+    alert("請輸入地址！");
+    return;
+  }
+  try {
+    const response = await fetch(
+      `https://api.nlsc.gov.tw/idc/TextQueryMap/${encodeURIComponent(
+        searchFuzzyAddress.value
+      )}/${searchFuzzyNum.value}`
+    );
+
+    console.log("response", response);
+    const responseText = await response.text(); // 取得回應的 XML 文字
+
+    // 🔹 解析 XML
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(responseText, "application/xml");
+
+    // 🔹 取得所有 `<ITEM>` 元素
+    const items = xmlDoc.querySelectorAll("ITEM");
+    searchFuzzyResults.value = Array.from(items).map((item) => {
+      return {
+        name: item.querySelector("CONTENT").textContent,
+        lon: parseFloat(
+          item.querySelector("LOCATION").textContent.split(",")[0]
+        ),
+        lat: parseFloat(
+          item.querySelector("LOCATION").textContent.split(",")[1]
+        ),
+      };
+    });
+
+    console.log("🔍 搜尋結果：", searchFuzzyResults.value);
+  } catch (error) {
+    console.error("地址搜尋失敗", error);
+    alert("搜尋失敗，請稍後再試！");
+  }
+};
+
+const setMapLocation = (item) => {
+  console.log("🗺️ 定位到：", item);
+  mapRef.value.setLocation(item.lon, item.lat); // 讓地圖飛到該位置
+};
+const removeSearchFuzzyLocation = () => {
+  mapRef.value.clearLocation();
+  searchFuzzyResults.value = [];
+  searchFuzzyAddress.value = "";
+};
+
+//***設定環域變數****************
 const setCircleRange = () => {
   const lon = parseFloat(lonRange.value);
   const lat = parseFloat(latRange.value);
@@ -302,7 +403,7 @@ const removeSetCircleRange = () => {
   radius.value = "";
 };
 
-//點擊地圖任一點+環域
+//***點擊地圖任一點+環域***************
 const clickSite = (coords) => {
   mapRef.value.clearCircleRange();
   clickCoords.value = coords;
@@ -335,24 +436,24 @@ const removeClickSite = () => {
   clickCoords.value = [];
 };
 
-//多點紀錄
+//***多點紀錄*****************
 const recordedSites = (sites) => {
   console.log("recordedSites", sites);
   recordedCoords.value = sites;
 };
-// **開始記錄**
+// 開始記錄
 const startRecording = () => {
   recordedCoords.value = [];
   mapRef.value.startRecording(); // 呼叫子元件
 };
 
-// **結束記錄**
+// 結束記錄
 const stopRecording = () => {
   mapRef.value.stopRecording();
   recordedCoords.value = [];
 };
 
-// **清除標記**
+// 清除標記
 const clearMarkers = () => {
   mapRef.value.clearMarkers();
   recordedSites.value = [];
@@ -457,15 +558,46 @@ onMounted(() => {
       <div class="select-section">
         <div class="select-area">
           <p>著名地標:</p>
-          <el-input v-model="address" placeholder="輸入著名地標"></el-input>
+          <el-input v-model="landmark" placeholder="輸入著名地標"></el-input>
         </div>
 
         <el-button @click="searchLocation">設定定位點</el-button>
         <el-button @click="removeSearchLocation"> 取消定位點</el-button>
-        <!-- <el-button @click="setCircleRange">設定環域範圍</el-button>
-        <el-button @click="clearCircle">清除環域</el-button> -->
         <span>使用openstreetmap資料不太完整</span>
       </div>
+      <div class="select-section">
+        <div class="select-area">
+          <p>地址:</p>
+          <el-input v-model="address" placeholder="輸入地址"></el-input>
+        </div>
+
+        <el-button @click="searchAddress">設定定位點</el-button>
+        <el-button @click="removeSearchLocation"> 取消定位點</el-button>
+        <span>使用國圖測繪 TextQueryMap ，取得尋找的第一個定位資料</span>
+      </div>
+
+      <div class="select-section">
+        <div class="select-area">
+          <p>模糊查詢地址:</p>
+          <el-input
+            v-model="searchFuzzyAddress"
+            placeholder="輸入地址"
+          ></el-input>
+          <el-input v-model="searchFuzzyNum" type="number" class="inputnumber"
+            >搜尋筆數</el-input
+          >
+        </div>
+        <el-button @click="searchFuzzy">模糊搜尋</el-button>
+        <el-button @click="removeSearchFuzzyLocation"> 取消搜尋</el-button>
+        <span>使用國圖測繪 TextQueryMap ，取得尋找的第一個定位資料</span>
+      </div>
+      <ul v-if="searchFuzzyResults.length > 0">
+        <li v-for="(item, index) in searchFuzzyResults" :key="index">
+          {{ item.name }}
+          <el-button @click="setMapLocation(item)"> 定位 </el-button>
+        </li>
+      </ul>
+
       <h4>環域</h4>
       <div class="select-section">
         <div class="select-area">
@@ -590,6 +722,14 @@ onMounted(() => {
           使用這隻API "https://nominatim.openstreetmap.org/search?format=json"
           取得 "著名地標 "的經緯度
         </li>
+        <li>
+          使用國圖測繪這隻API "https://api.nlsc.gov.tw/idc/TextQueryMap/" 取得
+          "地址" 的經緯度
+        </li>
+        <li>
+          取得目前位置功能(房子按鈕): 在localhost 可以使用
+          ,但在"http://192.168.1.96:3000/" 無法使用
+        </li>
       </ul>
     </div>
   </div>
@@ -613,7 +753,10 @@ onMounted(() => {
       margin-right: 20px;
       gap: 10px;
       p {
-        width: 90px;
+        white-space: nowrap;
+      }
+      .inputnumber {
+        width: 100px;
       }
     }
   }

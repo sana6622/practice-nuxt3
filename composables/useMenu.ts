@@ -79,6 +79,15 @@ export const useMenu = () => {
           subTitle: "nuxtIcon",
           link: "/action/nuxtIcon",
         },
+        {
+          subTitle: "自由拖曳",
+          link: "/action/freedomDraggable",
+        },
+
+        {
+          subTitle: "排序拖曳",
+          link: "/action/sortDraggable",
+        },
       ],
     },
   ]);

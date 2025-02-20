@@ -175,7 +175,8 @@ onMounted(() => {
 <template>
   <div>
     <div>
-      <button @click="triggerFileInput">上傳Excel</button>
+      <el-button @click="openAddDialog">新增</el-button>
+      <el-button @click="triggerFileInput">上傳Excel</el-button>
       <input
         type="file"
         ref="fileInput"
@@ -183,7 +184,6 @@ onMounted(() => {
         accept=".xlsx, .xls"
         style="display: none"
       />
-      <button @click="openAddDialog">新增</button>
     </div>
     <DragTable
       :headers="tableData.headers"

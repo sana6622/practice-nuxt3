@@ -23,6 +23,12 @@ const latitudeInput = ref(""); // 緯度 (Latitude)
 watch(
   () => props.modelValue,
   (newVal) => {
+    if (!newVal) {
+      formData.value = {}; // 避免 null 錯誤
+      longitudeInput.value = "";
+      latitudeInput.value = "";
+      return;
+    }
     formData.value = { ...newVal };
 
     // **如果 coords 存在，解析成經度 & 緯度**

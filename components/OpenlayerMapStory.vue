@@ -194,7 +194,6 @@ const addHeritageSites = () => {
 
     return feature;
   });
-  console.log("features", features);
 
   // **初始化 Cluster**
   if (!clusterSource.value) {
@@ -480,7 +479,6 @@ const updatePaths = (showPath) => {
 
 //重新賦值(當父層做景點篩選時)
 const updateSites = (newSites) => {
-  console.log("123123");
   heritageSites.value = [...newSites]; // 重新賦值
   console.log(" 子heritageSites.value ", heritageSites.value);
   addHeritageSites(); // 重新繪製標示

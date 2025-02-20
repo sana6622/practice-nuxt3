@@ -41,7 +41,7 @@ export const useTableStore = defineStore("tableStore", {
           des: "我的早餐",
         },
       ],
-    }, // 這裡存儲不同頁面的表格資料
+    },
   }),
   actions: {
     setItems(key, newItems) {

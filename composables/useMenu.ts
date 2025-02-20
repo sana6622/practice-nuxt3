@@ -25,6 +25,14 @@ export const useMenu = () => {
           subTitle: "openlayer Story+table資料",
           link: "/openlayer/openlayerStoryByTable",
         },
+        {
+          subTitle: "多表單+上傳Excel",
+          link: "/openlayer/multTable",
+        },
+        {
+          subTitle: "openlayer Story+多table資料",
+          link: "/openlayer/openlayerStoryByMultTable",
+        },
       ],
     },
     {

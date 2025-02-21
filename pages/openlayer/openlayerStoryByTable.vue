@@ -705,7 +705,9 @@ onMounted(() => {
       </div>
     </div>
     <div class="hit">
-      <p>使用檔案: components/OpenlayerMapStory.vue</p>
+      <p>
+        使用檔案: components/OpenlayerMapStory.vue ,component/DraggableDialog
+      </p>
       <p>安裝:npm install ol (openlayer)</p>
       <p>
         安裝:npm install @vueuse/core (其中一個功能 useWindowSize

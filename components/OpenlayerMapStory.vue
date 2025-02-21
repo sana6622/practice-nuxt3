@@ -1,4 +1,7 @@
 <script setup>
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation, Pagination } from "swiper/modules";
+
 import "ol/ol.css";
 import Map from "ol/Map.js";
 import OSM from "ol/source/OSM.js";
@@ -32,16 +35,15 @@ import { getDistance } from "ol/sphere"; // ✅ 用來計算經緯度距離
 import { getIconPathById } from "@/constants/icons";
 import { getIconColor } from "@/constants/color";
 import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
-
-const { ordinaryMap, dmaps, urbanLandZone, streetMap, landsect } =
-  useLayerData();
-const { width } = useWindowSize(); //監聽視窗大小的變化
-
 // **Props：接收父層傳來的景點資訊與當前選中點**
 const props = defineProps({
   heritageSites: Array, // 所有景點資訊（父層傳入）
   activeSite: Object, // 當前選中的景點
 });
+
+const { ordinaryMap, dmaps, urbanLandZone, streetMap, landsect } =
+  useLayerData();
+const { width } = useWindowSize(); //監聽視窗大小的變化
 
 // **地圖相關變數**
 const mapContainer = ref(null);
@@ -54,8 +56,13 @@ const heritageSites = ref([...props.heritageSites]);
 const showIcons = ref(true);
 const showPaths = ref(true);
 
-const measureSource = new VectorSource(); // 📏 用來存放測量的圖形
+//dialog
+const dialogVisible = ref(false);
+const selectedFeature = ref(null); // 存儲選中的 Icon 資料
+const modules = [Navigation, Pagination];
+const swiperKey = ref(0); // 🔄 用來強制重新渲染 Swiper
 
+const measureSource = new VectorSource(); // 📏 用來存放測量的圖形
 //測量樣式
 const measureLayer = new VectorLayer({
   source: measureSource,
@@ -372,11 +379,17 @@ const handleFeatureClick = (event) => {
       // **傳遞群聚內的標記**
       expandCluster(properties.features);
     } else if (properties.features && properties.features.length == 1) {
+      console.log("點擊icon");
       // **這是單個標記**
       const firstFeature = properties.features[0]; // 取第一個 feature
       const firstFeatureProps = firstFeature.getProperties(); // 再取 properties
       const iconName = firstFeatureProps.name;
       const coords = firstFeature.getGeometry().getCoordinates();
+
+      selectedFeature.value = heritageSites.value.find(
+        (site) => site.name === iconName
+      );
+      dialogVisible.value = true;
 
       mapInstance.value.getView().animate({
         center: coords,
@@ -885,6 +898,22 @@ const enablePointerCursor = () => {
       : "";
   });
 };
+/*swiper***/
+// 當 `selectedFeature` 變更時，回到第一張圖片
+watch(selectedFeature, (newList) => {
+  swiperKey.value += 1;
+});
+
+/***放大 縮小按鈕 */
+const zoomHandle = (type) => {
+  const currentZoom = mapInstance.value.getView().getZoom();
+  const zoomNum = type == "zoomIn" ? currentZoom + 1 : currentZoom - 1;
+  mapInstance.value.getView().animate({
+    zoom: zoomNum,
+    duration: 500,
+  });
+};
+
 /**路徑規劃 */
 // const drawPathPlan = (coordinates) => {
 //   console.log("進入路徑規劃");
@@ -972,11 +1001,73 @@ defineExpose({
     <button @click="rotateMap(-Math.PI / 4)">45°逆時針轉 (↺)</button>
     <button @click="rotateMap(Math.PI / 4)">45°順時針轉 (↻)</button>
     <button @click="resetRotation">重置 (⟲)</button>
+    <button @click="zoomHandle('zoomIn')">+</button>
+    <button @click="zoomHandle('zoomOut')">-</button>
 
     <div id="compass" class="compass"></div>
     <button @click="showCurrentLocation">
       <img src="../assets/img/home.svg" alt="" />
     </button>
+
+    <!-- <DraggableDialog
+      v-if="dialogVisible"
+      :visible="dialogVisible"
+      :title="'景點資訊'"
+      :data="selectedFeature"
+      :excludeFields="['images', 'id', 'icon', 'bgc']"
+      :fieldLabels="{
+        name: '名稱',
+        des: '描述',
+        image: '圖片',
+      }"
+      @close="dialogVisible = false"
+    /> -->
+
+    <!--寫法2->-->
+
+    <DraggableDialog
+      v-if="dialogVisible"
+      :visible="dialogVisible"
+      :data="selectedFeature"
+      title="景點詳細資訊"
+      @close="dialogVisible = false"
+    >
+      <template v-if="selectedFeature">
+        <div class="swiper-container">
+          <Swiper
+            ref="swiperRef"
+            :key="swiperKey"
+            :slides-per-view="1"
+            :space-between="30"
+            :keyboard="{
+              enabled: true,
+            }"
+            :pagination="{
+              clickable: true,
+            }"
+            :navigation="true"
+            :modules="modules"
+            class="mySwiper"
+          >
+            <SwiperSlide
+              v-for="(image, index) in selectedFeature.images"
+              :key="`image-${index}`"
+            >
+              <div class="box">
+                <img :src="image" alt="圖片一" />
+              </div>
+            </SwiperSlide>
+          </Swiper>
+        </div>
+
+        <h3>{{ selectedFeature.name }}</h3>
+        <p v-if="selectedFeature.des">{{ selectedFeature.des }}</p>
+
+        <p v-if="selectedFeature.location">
+          📍 位置：{{ selectedFeature.location }}
+        </p>
+      </template>
+    </DraggableDialog>
   </div>
 </template>
 
@@ -998,5 +1089,7 @@ defineExpose({
     transform-origin: center;
     transition: transform 0.3s ease-in-out;
   }
+
+  //swiper樣式 寫在DragableDialog內
 }
 </style>

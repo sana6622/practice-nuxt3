@@ -880,7 +880,9 @@ onMounted(() => {
       </div>
     </div>
     <div class="hit">
-      <p>使用檔案: components/OpenlayerMapStory.vue</p>
+      <p>
+        使用檔案: components/OpenlayerMapStory.vue,component/DraggableDialog
+      </p>
       <p>安裝:npm install ol (openlayer)</p>
       <p>
         安裝:npm install @vueuse/core (其中一個功能 useWindowSize
@@ -908,7 +910,7 @@ onMounted(() => {
       </ol>
       <p>新功能</p>
       <ol>
-        <li>可切換路線</li>
+        <li>可切換路線故事</li>
         <li>景點描述加入路徑(目前路徑資料寫死)</li>
       </ol>
     </div>

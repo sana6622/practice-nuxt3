@@ -121,6 +121,18 @@ const isRecording = ref(false);
 const compass = ref(null); // 指南針 DOM
 const compassRotation = ref(0); // 🔄 追蹤指南針的角度
 
+//**建立路徑規劃 */
+// const pathPlanSource = new VectorSource(); // 🚀 專門存放路線的 Source
+// const pathPlanLayer = new VectorLayer({
+//   source: pathPlanSource,
+//   style: new Style({
+//     stroke: new Stroke({
+//       color: "rgba(255, 0, 0, 0.9)", // 紅色線條
+//       width: 4,
+//     }),
+//   }),
+// });
+
 // **初始化地圖**
 const initMap = () => {
   const layers = [
@@ -349,7 +361,7 @@ const clusterStyle = (feature) => {
   }
 };
 
-// 定義群聚點擊事件的處理函式
+// 定義群聚點擊 & icon點擊
 const handleFeatureClick = (event) => {
   if (!mapInstance.value) return;
 
@@ -463,7 +475,7 @@ const updateIcons = (showIcon) => {
   }
 };
 
-// **更新 Paths 顯示狀態**
+// **更新 線條 顯示狀態**
 const updatePaths = (showPath) => {
   showPaths.value = showPath;
   if (showPath) {
@@ -480,7 +492,6 @@ const updatePaths = (showPath) => {
 //重新賦值(當父層做景點篩選時)
 const updateSites = (newSites) => {
   heritageSites.value = [...newSites]; // 重新賦值
-  console.log(" 子heritageSites.value ", heritageSites.value);
   addHeritageSites(); // 重新繪製標示
 };
 
@@ -673,7 +684,7 @@ const clearCircleRange = () => {
   poiSource.clear();
 };
 
-/*建立環域景點*/
+/*建立環域景點******/
 const poiSource = new VectorSource(); // ✅ 景點標記來源
 // **景點標記圖層**
 const poiLayer = new VectorLayer({
@@ -717,7 +728,7 @@ const fetchTourismData = async () => {
     console.error("❌ 取得景點資料失敗:", error);
   }
 };
-// 🎯 **篩選環域內的景點**
+//  **篩選環域內的景點**
 const filterPOIWithinRange = (lon, lat, radius) => {
   poiSource.clear(); // 清除舊標記
   const centerCoords = [lon, lat]; // 原始經緯度
@@ -746,7 +757,7 @@ const filterPOIWithinRange = (lon, lat, radius) => {
   console.log("filteredPoints", filteredPoints.value);
 };
 
-//取得目前位置
+//****取得目前位置****
 const showCurrentLocation = () => {
   if (!navigator.geolocation) {
     alert("❌ 你的瀏覽器不支援 Geolocation API");
@@ -782,7 +793,8 @@ const showCurrentLocation = () => {
     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
   );
 };
-// 點擊地圖上任一點 進行打點標記
+
+//** 點擊任一點 進行打點標記**********
 const handleMapClick = (event) => {
   if (!mapInstance.value) return;
 
@@ -791,8 +803,7 @@ const handleMapClick = (event) => {
 
   console.log("點擊經緯度lonLat", lonLat);
   if (isRecording.value) {
-    // **記錄模式：允許多個標記**
-
+    // 記錄模式：允許多個標記
     const clickFeature = new Feature({
       geometry: new Point(clickedCoordinate),
     });
@@ -804,7 +815,7 @@ const handleMapClick = (event) => {
     });
     emit("recorded-sites", recordedPoints.value);
   } else {
-    // **單點模式：清除舊點，新增新標記**
+    // 單點模式：清除舊點，新增新標記
     clickPointSource.clear();
     const clickFeature = new Feature({
       geometry: new Point(clickedCoordinate),
@@ -813,16 +824,6 @@ const handleMapClick = (event) => {
     clickPointSource.addFeature(clickFeature);
     emit("click-site", lonLat);
   }
-  // // 清除舊標記
-  // clickPointSource.clear();
-
-  // 新增點擊標記
-  // const clickFeature = new Feature({
-  //   geometry: new Point(clickedCoordinate),
-  // });
-
-  // clickPointSource.addFeature(clickFeature);
-  // emit("click-site", lonLat);
 };
 const clearHandleMapClick = () => {
   clickPointSource.clear();
@@ -842,7 +843,7 @@ const stopRecording = () => {
   recordedPoints.value = [];
 };
 
-//旋轉地圖
+//**旋轉地圖***
 const rotateMap = (angle) => {
   if (!mapInstance.value) return;
   const view = mapInstance.value.getView();
@@ -865,6 +866,47 @@ const updateCompass = () => {
   }
 };
 
+/**滑鼠移到icon 變手手 */
+const enablePointerCursor = () => {
+  if (!mapInstance.value) return;
+
+  mapInstance.value.on("pointermove", (event) => {
+    const hasFeature = mapInstance.value.forEachFeatureAtPixel(
+      event.pixel,
+      (feature) => {
+        const properties = feature.getProperties();
+        return properties.features?.length > 0; // 有 features 代表是標記或群聚點
+      }
+    );
+
+    // ✅ 根據 `hasFeature` 設定游標樣式
+    mapInstance.value.getTargetElement().style.cursor = hasFeature
+      ? "pointer"
+      : "";
+  });
+};
+/**路徑規劃 */
+// const drawPathPlan = (coordinates) => {
+//   console.log("進入路徑規劃");
+//   if (!mapInstance.value) return;
+
+//   pathPlanSource.clear(); // 清除舊路線
+
+//   // 🚀 轉換座標格式 (EPSG:3857)
+//   const pathPoints = coordinates.map((coord) => fromLonLat(coord));
+
+//   // ✅ 直接新增 `LineString` 到 `pathPlanSource`
+//   pathPlanSource.addFeature(new Feature(new LineString(pathPoints)));
+
+//   console.log("✅ 路線已加入 `pathPlanSource`！");
+
+//   // ✅ 確保 `pathPlanLayer` 被加入 `mapInstance`
+//   if (!mapInstance.value.getLayers().getArray().includes(pathPlanLayer)) {
+//     mapInstance.value.addLayer(pathPlanLayer);
+//     console.log("✅ `pathPlanLayer` 已加入地圖！");
+//   }
+// };
+
 onMounted(() => {
   initMap();
   //綁定群聚點擊事件
@@ -874,11 +916,13 @@ onMounted(() => {
   mapInstance.value.addLayer(locationLayer); //加入定位點
   mapInstance.value.addLayer(poiLayer); // 加入環域景點圖層
   mapInstance.value.addLayer(circleLayer); // 加入環域範圍圖層
+  // mapInstance.value.addLayer(pathPlanLayer); //加入路徑規劃圖層
 
+  locationLayer.setZIndex(10); // 定位圖層在最上面
   poiLayer.setZIndex(10); // 景點圖層在最上面
   circleLayer.setZIndex(5); // 環域圖層
   clickPointLayer.setZIndex(10); // 📍 點擊標記圖層在最上面
-
+  // pathPlanLayer.setZIndex(9); // 路徑規劃圖層在最上面
   mapInstance.value.on("singleclick", handleMapClick); // 📍 監聽地圖點擊事件
   mapInstance.value.addLayer(clickPointLayer); // 📍 加入點擊標記圖層
 
@@ -891,6 +935,7 @@ onMounted(() => {
       updateCompass();
     });
   }
+  enablePointerCursor(); // ✋ 啟用指標游標
 });
 
 // 定義 emit 事件，讓父層接收點擊結果
@@ -905,7 +950,7 @@ const emit = defineEmits([
 defineExpose({
   flyTo,
   updateIcons,
-  updatePaths,
+  updatePaths, //畫線
   updateSites,
   // resetView,
   getMap: () => mapInstance.value, //為了新增圖層(如地籍圖)
@@ -918,6 +963,7 @@ defineExpose({
   clearHandleMapClick,
   startRecording,
   stopRecording,
+  // drawPathPlan,
 });
 </script>
 

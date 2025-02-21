@@ -32,6 +32,7 @@ const heritageSites = ref([]);
 const selectIcon = ref("");
 
 const routsList = ref([...store.routes]);
+const currentRouteId = ref("");
 
 const activeImage = ref(""); // 當前顯示的圖片
 const activeImageList = ref([]);
@@ -64,6 +65,10 @@ const radius2 = ref(500);
 //點擊地圖打點
 const clickCoords = ref([]);
 const recordedCoords = ref([]);
+//路徑規劃
+const transportation = ref("car");
+const startPath = ref("121.43293257662818,25.1754506520644");
+const endPath = ref("121.43835363903158,25.172986633737438");
 
 // **滑鼠進入時，更新地圖與圖片**
 const hoverLocation = (site) => {
@@ -207,7 +212,10 @@ const preventClick = () => {
 };
 
 const clearHandle = () => {
-  heritageSites.value = [...store.tables["group1"]];
+  heritageSites.value = store.routes.find(
+    (route) => route.id === currentRouteId.value
+  ).spots;
+  console.log("clearHandle", heritageSites.value);
   selectIcon.value = "";
   mapRef.value.updateSites(heritageSites.value);
   mapRef.value.flyTo(heritageSites.value[0].coords);
@@ -461,23 +469,88 @@ const clearMarkers = () => {
   recordedSites.value = [];
 };
 
-//更改路線
+//****更改路線故事*******
 const changeRoute = (id) => {
   console.log("changeRoute", id);
-
+  currentRouteId.value = id;
   heritageSites.value = routsList.value.find((route) => route.id === id).spots;
   console.log("heritageSites", heritageSites.value);
 
   init();
 };
 
+//****最短路徑規劃*******
+
+// const setStartPathPlan = () => {
+//   shortestPathPlan();
+// };
+
+// const shortestPathPlan = async () => {
+//   try {
+//     const response = await fetch(
+//       `https://api.nlsc.gov.tw/other/RoutesQueryByDist/${startPath.value}/${endPath.value}/json/${transportation.value}?barrier=120.635516,24.178946,120.637716,24.177746`
+//     );
+
+//     // 🚀 解析 JSON
+//     const blob = await response.blob();
+//     const jsonText = await blob.text(); // 先轉為文本
+//     const jsonData = JSON.parse(jsonText); // 再解析成 JSON
+
+//     console.log("📜 解析 JSON 內容:", jsonData);
+
+//     // 確保 JSON 內有 "features" 並包含 "geometry.coordinates"
+//     if (!jsonData.features || jsonData.features.length === 0) {
+//       throw new Error("JSON 內沒有有效的路線數據");
+//     }
+
+//     // 取得所有路徑的經緯度
+//     const pathCoordinates = jsonData.features
+//       .map((feature) => feature.geometry.coordinates)
+//       .flat(); // 合併所有座標點
+
+//     console.log("🚀 解析後的路線座標:", pathCoordinates);
+
+//     // ✅ 在地圖上繪製路線
+//     mapRef.value.drawPathPlan(pathCoordinates);
+//   } catch (error) {
+//     console.error("路線搜尋失敗", error);
+//     alert("搜尋失敗，請稍後再試！");
+//   }
+// };
+
+//**景點描術+路徑 */
+const pathsData = ref([
+  { distance: 100, time: 3 },
+  { distance: 200, time: 5 },
+  { distance: 150, time: 4 },
+  // ... 這裡是每段路徑的資訊
+]);
+
+const heritageSitesWithPaths = computed(() => {
+  const result = [];
+  heritageSites.value.forEach((site, index) => {
+    result.push({ type: "site", data: site });
+
+    // 插入對應的路徑資訊（最後一個景點後不插入）
+    if (index < heritageSites.value.length - 1 && pathsData.value[index]) {
+      result.push({ type: "path", data: pathsData.value[index] });
+    }
+  });
+  return result;
+});
+
 watch(
   () => selectIcon.value,
   (newIconId) => {
     if (newIconId) {
-      heritageSites.value = store.tables["group1"].filter(
+      let currentAllSpots = store.routes.find(
+        (route) => route.id === currentRouteId.value
+      ).spots;
+
+      heritageSites.value = currentAllSpots.filter(
         (site) => site.icon === newIconId
       );
+
       console.log("watch", heritageSites.value.length);
       if (heritageSites.value.length > 0) {
         console.log("select heritageSite", heritageSites);
@@ -492,7 +565,9 @@ watch(
       }
     } else {
       // 如果沒有選擇 icon，回復所有數據
-      heritageSites.value = [...store.tables["group1"]];
+      heritageSites.value = store.routes.find(
+        (route) => route.id === currentRouteId.value
+      ).spots;
     }
   }
 );
@@ -512,19 +587,24 @@ const init = () => {
 
 onMounted(() => {
   console.log("取出Pinia資料", store.routes);
+  currentRouteId.value = store.routes[0].id;
   heritageSites.value = [...store.routes[0].spots];
   init();
   // console.log("iconList", iconList);
 });
 </script>
 <template>
-  <div class="oplayerStory">
+  <div class="oplayerStoryMultTable">
     <div>
       <el-button @click="preventClick">回資料表</el-button>
       <h4>切換路線</h4>
       <ul class="change-route">
         <li v-for="route in routsList" :key="route.id">
-          <el-button @click="changeRoute(route.id)">{{ route.name }}</el-button>
+          <el-button
+            @click="changeRoute(route.id)"
+            :class="{ active: currentRouteId === route.id }"
+            >{{ route.name }}</el-button
+          >
         </li>
       </ul>
       <h4>功能切換</h4>
@@ -674,6 +754,48 @@ onMounted(() => {
           </li>
         </ul>
       </div>
+      <!-- <h4>路徑規劃</h4>
+      <div class="select-section">
+        <p>交通工具:</p>
+        <el-button
+          @click="transportation = 'car'"
+          :class="{ active: transportation === 'car' }"
+          >汽車</el-button
+        >
+        <el-button
+          @click="transportation = 'foot'"
+          :class="{ active: transportation === 'foot' }"
+          >走路</el-button
+        >
+        <el-button
+          @click="transportation = 'avoid_highways'"
+          :class="{ active: transportation === 'avoid_highways' }"
+          >機車</el-button
+        >
+        <ul>
+          <li v-for="(point, index) in recordedCoords" :key="index">
+            📍 點 {{ index + 1 }}：{{ point.lon }}, {{ point.lat }}
+          </li>
+        </ul>
+      </div>
+      <div class="select-section">
+        <el-button @click="enableSelectStart">設定起點</el-button>
+        <span>起點: {{ startPath }}</span>
+      </div>
+
+      <div class="select-section">
+        <el-button @click="enableSelectEnd">設定終點</el-button>
+        <span>終點: {{ endPath }}</span>
+      </div>
+
+      <div class="select-section">
+        <el-button @click="shortestPathPlan">路徑規劃</el-button>
+        <ul>
+          <li v-for="(point, index) in recordedCoords" :key="index">
+            📍 點 {{ index + 1 }}：{{ point.lon }}, {{ point.lat }}
+          </li>
+        </ul>
+      </div> -->
     </div>
     <div class="story">
       <!-- **左邊區塊** -->
@@ -702,13 +824,13 @@ onMounted(() => {
               :key="`image-${index}`"
             >
               <div class="box">
-                <img :src="image" alt="圖片一" />
+                <img :src="image" alt="照片" />
               </div>
             </SwiperSlide>
           </Swiper>
         </div>
 
-        <ul>
+        <!-- <ul>
           <li
             v-for="(site, index) in heritageSites"
             :key="index"
@@ -719,6 +841,28 @@ onMounted(() => {
             <h3>{{ site.name }}</h3>
             <p>這是 {{ site.name }} 的簡介內容...</p>
             <p>{{ site.des }}</p>
+          </li>
+        </ul> -->
+        <ul>
+          <li
+            v-for="(item, index) in heritageSitesWithPaths"
+            :key="index"
+            class="site"
+            :class="{ 'path-info': item.type === 'path' }"
+            :data-name="item.type === 'site' ? item.data.name : ''"
+            @mouseenter="item.type === 'site' ? hoverLocation(item.data) : null"
+          >
+            <template v-if="item.type === 'site'">
+              <h3>{{ item.data.name }}</h3>
+              <p>這是 {{ item.data.name }} 的簡介內容...</p>
+              <p>{{ item.data.des }}</p>
+            </template>
+
+            <template v-else>
+              <p>
+                公尺: {{ item.data.distance }} | 時間: {{ item.data.time }}分
+              </p>
+            </template>
           </li>
         </ul>
       </div>
@@ -765,13 +909,14 @@ onMounted(() => {
       <p>新功能</p>
       <ol>
         <li>可切換路線</li>
+        <li>景點描述加入路徑(目前路徑資料寫死)</li>
       </ol>
     </div>
   </div>
 </template>
 
 <style lang="scss">
-.oplayerStory {
+.oplayerStoryMultTable {
   button {
     margin: 5px;
   }
@@ -807,6 +952,11 @@ onMounted(() => {
       }
     }
   }
+  .active {
+    font-weight: bold;
+    background-color: rgb(236, 93, 117);
+    color: white;
+  }
 
   .story {
     display: flex;
@@ -841,17 +991,21 @@ onMounted(() => {
         padding: 20px;
         background: #fffaf0;
         overflow-y: auto;
-        :hover {
-          background: #f8ddb3;
-        }
-        li {
+
+        .site {
           padding: 10px;
           margin-bottom: 10px;
           border-radius: 8px;
-          height: 100%;
           cursor: pointer;
           background: #ffebcd;
           transition: all 0.3s ease;
+        }
+        .path-info {
+          background: #f0f0f0;
+          background-color: transparent;
+          border-left: 3px solid black;
+          border-radius: 0;
+          margin-left: 20px;
         }
       }
     }

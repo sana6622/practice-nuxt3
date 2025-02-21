@@ -5,32 +5,6 @@ export const useMultTableStore = defineStore("multTableStore", {
     routes: [
       {
         id: "route1",
-        name: "台北一日遊",
-        spots: [
-          {
-            id: "1",
-            name: "台北101",
-            coords: [121.564558, 25.033964], // 經緯度
-            image: "/images/taipei101.jpg",
-            images: ["/images/taipei101_1.jpg", "/images/taipei101_2.jpg"],
-            icon: "3",
-            bgc: "2",
-            des: "台北的地標大樓，曾是世界最高建築。",
-          },
-          {
-            id: "2",
-            name: "中正紀念堂",
-            coords: [121.519831, 25.036904],
-            image: "/images/cks.jpg",
-            images: ["/images/cks_1.jpg", "/images/cks_2.jpg"],
-            icon: "4",
-            bgc: "1",
-            des: "紀念蔣中正總統的歷史建築，國家級景點。",
-          },
-        ],
-      },
-      {
-        id: "route2",
         name: "淡水一日遊",
         spots: [
           {
@@ -71,6 +45,38 @@ export const useMultTableStore = defineStore("multTableStore", {
             icon: 13,
             bgc: 4,
             des: "我的早餐",
+          },
+        ],
+      },
+      {
+        id: "route2",
+        name: "台北一日遊",
+        spots: [
+          {
+            id: "1",
+            name: "台北101",
+            coords: [121.564558, 25.033964], // 經緯度
+            image: "/image/mapImage/台北101-1.jpg",
+            images: [
+              "/image/mapImage/台北101-1.jpg",
+              "/image/mapImage/台北101-2.jpg",
+            ],
+            icon: "3",
+            bgc: "2",
+            des: "台北的地標大樓，曾是世界最高建築。",
+          },
+          {
+            id: "2",
+            name: "中正紀念堂",
+            coords: [121.519831, 25.036904],
+            image: "/image/mapImage/中正紀念堂-1.jpg",
+            images: [
+              "/image/mapImage/中正紀念堂-1.jpg",
+              "/image/mapImage/中正紀念堂-2.jpg",
+            ],
+            icon: "4",
+            bgc: "1",
+            des: "紀念蔣中正總統的歷史建築，國家級景點。",
           },
         ],
       },

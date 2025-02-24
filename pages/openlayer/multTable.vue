@@ -2,6 +2,7 @@
 import { useMultTableStore } from "@/stores/multTableStore";
 import * as XLSX from "xlsx";
 import { ElMessage, ElMessageBox } from "element-plus";
+import { useDraggable } from "@vueuse/core";
 
 const store = useMultTableStore();
 const router = useRouter();
@@ -192,6 +193,22 @@ const deleteSpot = (spotId) => {
 const nextClick = () => {
   router.push("/openlayer/openlayerStoryByMultTable");
 };
+
+/***拖曳 */
+const spots = computed(() => currentRoute.value?.spots || []);
+
+const draggableRefs = ref(currentRoute.value.spots.map(() => null));
+const onDragStart = (event, index) => {
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", index);
+};
+
+const onDrop = (event, index) => {
+  const draggedIndex = event.dataTransfer.getData("text/plain");
+  const draggedItem = currentRoute.value.spots.splice(draggedIndex, 1)[0];
+  currentRoute.value.spots.splice(index, 0, draggedItem);
+  store.updateSpotInRoute(currentRouteId.value, currentRoute.value.spots);
+};
 </script>
 
 <template>
@@ -249,6 +266,22 @@ const nextClick = () => {
       />
     </div>
 
+    <h2>拖曳</h2>
+    <ul class="list-group">
+      <li
+        v-for="(item, index) in currentRoute.spots"
+        :key="item.id"
+        ref="draggableRefs"
+        class="list-group-item"
+        draggable="true"
+        @dragstart="onDragStart($event, index)"
+        @drop="onDrop($event, index)"
+        @dragover.prevent
+      >
+        {{ item.name }}
+      </li>
+    </ul>
+
     <!-- 📌 新增/編輯景點 Dialog -->
     <Dialog
       ref="dialogRef"
@@ -295,5 +328,17 @@ const nextClick = () => {
   // .delete-route {
   //   background-color: red;
   // }
+
+  .list-group {
+    list-style: none;
+    padding: 0;
+  }
+  .list-group-item {
+    padding: 10px;
+    margin: 5px 0;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: grab;
+  }
 }
 </style>

@@ -61,6 +61,8 @@ const dialogVisible = ref(false);
 const selectedFeature = ref(null); // 存儲選中的 Icon 資料
 const modules = [Navigation, Pagination];
 const swiperKey = ref(0); // 🔄 用來強制重新渲染 Swiper
+const selectedImage = ref("");
+const clickIconPosition = ref({ x: 0, y: 0 }); //點擊icon的畫面xy位置
 
 const measureSource = new VectorSource(); // 📏 用來存放測量的圖形
 //測量樣式
@@ -391,6 +393,10 @@ const handleFeatureClick = (event) => {
       );
       dialogVisible.value = true;
 
+      const pixel = event.pixel; // 取得點擊位置
+      console.log("pixel", pixel);
+      clickIconPosition.value = { x: pixel[0], y: pixel[1] }; // **存入 clickPosition**
+      console.log("clickIcon", clickIconPosition.value);
       mapInstance.value.getView().animate({
         center: coords,
         zoom: 18,
@@ -724,7 +730,7 @@ const poiLayer = new VectorLayer({
     ];
   },
 });
-// 🚀 **取得台灣觀光景點 Open Data**
+//  **取得台灣觀光景點 Open Data**
 const tourismData = ref([]); // 存放觀光景點資料
 const fetchTourismData = async () => {
   try {
@@ -753,6 +759,7 @@ const filterPOIWithinRange = (lon, lat, radius) => {
 
     if (distance <= radius) {
       // **該景點在範圍內**
+
       filteredPoints.value.push({
         ...spot,
         distance: distance.toFixed(2), // 追加距離資訊（保留 2 位小數）
@@ -762,6 +769,16 @@ const filterPOIWithinRange = (lon, lat, radius) => {
       const poiFeature = new Feature({
         geometry: new Point(spotCoords),
         name: spot.ScenicSpotName,
+        type: "POI", // 標記為 POI，方便判斷
+        location: spot.Address || "未知地址",
+        // images: spot.Picture.PictureUrl1 ? [spot.Picture.PictureUrl1] : [], // 取得所有圖片
+        images: spot.Picture
+          ? Object.values(spot.Picture).filter(
+              (url) => typeof url === "string" && url.startsWith("http")
+            ) // 確保是圖片 URL
+          : [],
+        des: spot.Description || "無描述",
+        coords: [spotLon, spotLat], // 經緯度
       });
 
       poiSource.addFeature(poiFeature);
@@ -779,8 +796,13 @@ const showCurrentLocation = () => {
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      const { latitude, longitude } = position.coords;
+      console.log("position", position);
+      const { latitude, longitude, accuracy } = position.coords;
       const coords = fromLonLat([longitude, latitude]);
+      // if (accuracy > 1000) {
+      //   console.warn(`⚠️ 位置誤差過大 (${accuracy}m)，等待更精確的定位...`);
+      //   return;
+      // }
 
       // 清除舊標記
       locationSource.clear();
@@ -814,7 +836,24 @@ const handleMapClick = (event) => {
   const clickedCoordinate = event.coordinate; // 取得點擊的地圖座標
   const lonLat = toLonLat(clickedCoordinate); // 轉換為經緯度
 
-  console.log("點擊經緯度lonLat", lonLat);
+  // ✅ 檢查是否點擊到 環域景點 POI
+  let clickedPOI = null;
+  mapInstance.value.forEachFeatureAtPixel(event.pixel, (feature) => {
+    if (feature.get("type") === "POI") {
+      clickedPOI = feature.getProperties();
+    }
+  });
+
+  if (clickedPOI) {
+    console.log("✅ 點擊了 POI:", clickedPOI);
+    selectedFeature.value = clickedPOI;
+    dialogVisible.value = true;
+
+    // 設定 dialog 位置
+    clickIconPosition.value = { x: event.pixel[0], y: event.pixel[1] };
+    return;
+  }
+
   if (isRecording.value) {
     // 記錄模式：允許多個標記
     const clickFeature = new Feature({
@@ -888,7 +927,7 @@ const enablePointerCursor = () => {
       event.pixel,
       (feature) => {
         const properties = feature.getProperties();
-        return properties.features?.length > 0; // 有 features 代表是標記或群聚點
+        return properties.features?.length > 0 || properties.type === "POI"; // 有 features 代表是標記或群聚點
       }
     );
 
@@ -898,11 +937,17 @@ const enablePointerCursor = () => {
       : "";
   });
 };
+
 /*swiper***/
 // 當 `selectedFeature` 變更時，回到第一張圖片
 watch(selectedFeature, (newList) => {
   swiperKey.value += 1;
 });
+/*🔍 點擊圖片開啟預覽*/
+
+const openImagePreview = (image) => {
+  selectedImage.value = image;
+};
 
 /***放大 縮小按鈕 */
 const zoomHandle = (type) => {
@@ -1004,10 +1049,12 @@ defineExpose({
     <button @click="zoomHandle('zoomIn')">+</button>
     <button @click="zoomHandle('zoomOut')">-</button>
 
+    <!--地圖繪製--->
     <div id="compass" class="compass"></div>
     <button @click="showCurrentLocation">
-      <img src="../assets/img/home.svg" alt="" />
+      <img src="../assets/img/postion.svg" alt="" />
     </button>
+    <!--地圖繪製結束--->
 
     <!-- <DraggableDialog
       v-if="dialogVisible"
@@ -1030,6 +1077,7 @@ defineExpose({
       :visible="dialogVisible"
       :data="selectedFeature"
       title="景點詳細資訊"
+      :position="clickIconPosition"
       @close="dialogVisible = false"
     >
       <template v-if="selectedFeature">
@@ -1054,7 +1102,7 @@ defineExpose({
               :key="`image-${index}`"
             >
               <div class="box">
-                <img :src="image" alt="圖片一" />
+                <img :src="image" alt="圖片" @click="openImagePreview(image)" />
               </div>
             </SwiperSlide>
           </Swiper>
@@ -1068,6 +1116,18 @@ defineExpose({
         </p>
       </template>
     </DraggableDialog>
+
+    <!-- 🔍 圖片放大預覽 -->
+    <div
+      v-if="selectedImage"
+      class="image-overlay"
+      @click="selectedImage = null"
+    >
+      <div class="image-container">
+        <img :src="selectedImage" class="preview-image" />
+        <button class="close-btn" @click.stop="selectedImage = null">✖</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -1091,5 +1151,53 @@ defineExpose({
   }
 
   //swiper樣式 寫在DragableDialog內
+
+  /* 🔍 全螢幕圖片預覽 */
+  .image-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .image-container {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .preview-image {
+    max-width: 90vw;
+    max-height: 90vh;
+    min-width: 50vw;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: white;
+    font-size: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+
+  .close-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+  }
 }
 </style>

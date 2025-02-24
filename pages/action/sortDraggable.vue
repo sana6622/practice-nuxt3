@@ -1,12 +1,11 @@
 <script setup>
 import { ref } from "vue";
-import { useDraggable } from "@vueuse/core";
 
 const items = ref([
-  { id: 1, name: "項目 1" },
-  { id: 2, name: "項目 2" },
-  { id: 3, name: "項目 3" },
-  { id: 4, name: "項目 4" },
+  { id: 1, name: "項目 1", grabbed: false },
+  { id: 2, name: "項目 2", grabbed: false },
+  { id: 3, name: "項目 3", grabbed: false },
+  { id: 4, name: "項目 4", grabbed: false },
 ]);
 
 const draggableRefs = ref(items.value.map(() => null));
@@ -25,7 +24,7 @@ const onDrop = (event, index) => {
 
 <template>
   <div class="container">
-    <h2>VueUse 拖曳</h2>
+    <h2>原生 HTML5 拖曳</h2>
     <ul class="list-group">
       <li
         v-for="(item, index) in items"
@@ -59,5 +58,9 @@ const onDrop = (event, index) => {
   background: #f0f0f0;
   border: 1px solid #ccc;
   cursor: grab;
+}
+.list-group-item:focus {
+  outline: 2px solid blue;
+  background-color: lightblue;
 }
 </style>

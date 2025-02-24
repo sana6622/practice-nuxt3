@@ -41,9 +41,23 @@ onUnmounted(() => {
   window.removeEventListener("mousemove", onMouseMove);
   window.removeEventListener("mouseup", onMouseUp);
 });
+
+const dialogVisible = ref(false);
+const selectedFeature = ref({
+  id: 1,
+  name: "淡水阿給",
+  des: "我的早餐",
+  icon: 1,
+  bgc: 2,
+  image: "../../public/image/mapImage/淡水老牌阿給.png",
+});
+const clickHandle = () => {
+  dialogVisible.value = true;
+};
 </script>
 <template>
-  <div class="useDragable">
+  <div class="freedomDraggable">
+    <h4>可拖曳卡片</h4>
     <div class="container">
       <div
         v-for="(item, index) in items"
@@ -61,12 +75,31 @@ onUnmounted(() => {
         {{ item.name }}
       </div>
     </div>
+    <h4>可拖曳dialog</h4>
+    <button @click="clickHandle">可拖曳的dialog</button>
+    <DraggableDialog
+      v-if="dialogVisible"
+      :visible="dialogVisible"
+      :title="'景點資訊'"
+      :data="selectedFeature"
+      :excludeFields="['images', 'id', 'icon', 'bgc']"
+      :fieldLabels="{
+        name: '名稱',
+        des: '描述',
+        image: '圖片',
+      }"
+      @close="dialogVisible = false"
+    />
     <div class="hit">
       <p>安裝: npm install @vueuse/core</p>
       <p>使用vueUse的 useDraggable</p>
+      s
       <p>功能:</p>
       <ul>
-        <li>可隨意拖曳</li>
+        <li>1. 第一種: 原生寫法 使用mouse事件完成拖曳</li>
+        <li>2. 第二種: 寫在comonents/draggableDialog</li>
+        <li>2-1.excludeFields 不顯示在dialog的文字資料</li>
+        <li>2-2. 另外有額外做- 當變數資料有缺時 不會顯示那個變數的label</li>
         <li>
           <a href="https://vueuse.org/core/useDraggable/" target="_blank"
             >官方網站</a
@@ -78,7 +111,7 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss">
-.useDragable {
+.freedomDraggable {
   .container {
     position: relative;
     width: 100%;

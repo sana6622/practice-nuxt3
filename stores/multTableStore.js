@@ -108,6 +108,7 @@ export const useMultTableStore = defineStore("multTableStore", {
           route.spots[index] = updatedSpot;
         }
       }
+      console.log("pinia 被更新囉");
     },
     setExcelSpotsInRoute(routeId, spots) {
       const route = this.routes.find((r) => r.id === routeId);

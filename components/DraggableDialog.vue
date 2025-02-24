@@ -1,21 +1,85 @@
 <script setup>
+import { useDraggable } from "@vueuse/core";
+
 const props = defineProps({
   visible: Boolean,
   data: Object,
   title: { type: String, default: "詳細資訊" },
   fieldLabels: { type: Object, default: {} }, // 自訂標籤對應
   excludeFields: { type: Array, default: () => ["image"] }, // **要排除不顯示值的欄位**
+  position: { type: Object, default: () => ({ x: 300, y: 200 }) }, // **點擊 icon 的座標**
 });
 
 const emit = defineEmits(["close"]);
 
 const dialogRef = ref(null);
-const position = reactive({ top: 100, left: 100 }); // 初始對話框位置
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-let offsetX = 0;
-let offsetY = 0;
+// const { x, y, style } = useDraggable(dialogRef); // ✅ VueUse 提供的拖曳功能
+// 📌 **Dialog 預設寬高**
+const dialogWidth = 400; // 假設 dialog 寬度 400px
+const dialogHeight = 300; // 假設 dialog 高度 300px
+
+// 📌 **計算對話框位置 (防止超出邊界)**
+const calculatePosition = (pos) => {
+  let x = pos.x - 50;
+  let y = pos.y - 300;
+
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+
+  // **防止 Dialog 超出右側**
+  if (x + dialogWidth > screenWidth) {
+    x = screenWidth - dialogWidth - 20; // 靠右邊界留 20px
+  }
+
+  // **防止 Dialog 超出左側**
+  if (x < 20) {
+    x = 20; // 靠左邊界留 20px
+  }
+
+  // **防止 Dialog 超出下方**
+  if (y + dialogHeight > screenHeight) {
+    y = screenHeight - dialogHeight - 20; // 靠下邊界留 20px
+  }
+
+  // **防止 Dialog 超出上方**
+  if (y < 20) {
+    y = 20; // 靠上邊界留 20px
+  }
+
+  return { x, y };
+};
+
+// 📌 **計算對話框初始位置**
+const initialPos = calculatePosition(props.position);
+// ✅ `ref` 確保 `useDraggable` 可以使用
+const x = ref(initialPos.x);
+const y = ref(initialPos.y);
+
+// **✅ 使用 VueUse `useDraggable`**
+const { style } = useDraggable(dialogRef, {
+  initialValue: { x, y },
+});
+
+// **監聽 `props.position`，當 Icon 點擊時動態調整位置**
+watch(
+  () => props.position,
+  (newPos) => {
+    const adjustedPos = calculatePosition(newPos);
+    x.value = adjustedPos.x;
+    y.value = adjustedPos.y;
+  },
+  { immediate: true }
+);
+// watch(
+//   () => props.position,
+//   (newPos) => {
+//     x.value = newPos.x - 50;
+//     y.value = newPos.y - 300;
+//   },
+//   { immediate: true }
+// );
+
+// **監聽 `props.position`，當 Icon 點擊時動態調整位置**
 
 // **預先過濾要顯示的資料**
 const displayData = computed(() => {
@@ -30,59 +94,14 @@ const displayData = computed(() => {
   );
 });
 
-watch(
-  () => props.visible,
-  (newVal) => {
-    if (newVal) {
-      nextTick(() => {
-        const dialog = dialogRef.value;
-        if (dialog) {
-          position.top = window.innerHeight / 3;
-          position.left = window.innerWidth / 3;
-        }
-      });
-    }
-  }
-);
-
 const closeDialog = () => {
   emit("close");
 };
-
-const startDrag = (event) => {
-  if (event.button !== 0) return; // 只允許左鍵拖曳
-
-  isDragging = true;
-  startX = event.clientX;
-  startY = event.clientY;
-  offsetX = position.left;
-  offsetY = position.top;
-
-  document.addEventListener("mousemove", dragMove);
-  document.addEventListener("mouseup", stopDrag);
-};
-
-const dragMove = (event) => {
-  if (!isDragging) return;
-  position.left = offsetX + (event.clientX - startX);
-  position.top = offsetY + (event.clientY - startY);
-};
-
-const stopDrag = () => {
-  isDragging = false;
-  document.removeEventListener("mousemove", dragMove);
-  document.removeEventListener("mouseup", stopDrag);
-};
 </script>
+
 <template>
   <teleport to="body">
-    <div
-      v-if="visible"
-      ref="dialogRef"
-      class="draggable-dialog"
-      :style="{ top: `${position.top}px`, left: `${position.left}px` }"
-      @mousedown="startDrag"
-    >
+    <div v-if="visible" ref="dialogRef" class="draggable-dialog" :style="style">
       <div class="dialog-header">
         <span>{{ title }}</span>
         <button @click="closeDialog">✖</button>
@@ -97,10 +116,11 @@ const stopDrag = () => {
     </div>
   </teleport>
 </template>
+
 <style lang="scss">
 .draggable-dialog {
   position: fixed;
-  width: 400px;
+  width: 350px;
   background: white;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
@@ -131,13 +151,13 @@ const stopDrag = () => {
   }
   .swiper-container {
     width: 100%; /* 可以調整這裡來增加或減少 Swiper 容器的寬度 */
-    height: 300px;
+    height: 200px;
     position: relative;
     margin: 0 auto; /* 居中 */
     padding-bottom: 50px;
 
     .swiper-slide {
-      height: 300px;
+      height: 200px;
     }
     .box {
       width: 80%; /* 保持容器的寬度 */

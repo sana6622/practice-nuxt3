@@ -88,6 +88,8 @@ const showToolDialog = ref(false);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    font-size: 20px;
+    font-weight: 700;
     // @include mobile {
     //   @include setFont(20px, 40px, 700);
     // }
@@ -117,6 +119,7 @@ const showToolDialog = ref(false);
   .toolContent {
     padding: 20px;
     box-sizing: border-box;
+
     // @include pad {
     //   padding: 10px 20px 20px 20px;
     //   transition: all 0.3s ease-in;

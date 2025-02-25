@@ -1049,12 +1049,10 @@ defineExpose({
     <button @click="zoomHandle('zoomIn')">+</button>
     <button @click="zoomHandle('zoomOut')">-</button>
 
-    <!--地圖繪製--->
     <div id="compass" class="compass"></div>
     <button @click="showCurrentLocation">
       <img src="../assets/img/postion.svg" alt="" />
     </button>
-    <!--地圖繪製結束--->
 
     <!-- <DraggableDialog
       v-if="dialogVisible"

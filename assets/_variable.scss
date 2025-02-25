@@ -34,7 +34,6 @@ $size-l: 1.25rem; //20px
 $size-xl: 1.5rem; //24px
 $size-xxl: 1.75rem; //28px
 
-
 // RWD
 // 在寬度1366px以下時的CSS樣式
 @mixin winodw {
@@ -71,3 +70,9 @@ $size-xxl: 1.75rem; //28px
     transform: rotate(360deg);
   }
 }
+
+///暫用
+$MainBrown: #b5985e;
+$DarkBrown: #5a4621;
+$LightBrown: #f6f3ec;
+$ActiveYellow: #f5f2e4;

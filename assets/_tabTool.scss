@@ -1,0 +1,140 @@
+.tabTool {
+  height: calc(100% - 40px);
+  .el-tabs {
+    height: 100%;
+  }
+  .el-tabs__header {
+    margin: 0;
+  }
+  //文字
+  .el-tabs__item {
+    // @include setFont(18px, 40px, 600);
+    color: black;
+    padding: 10px 10px;
+    box-sizing: border-box;
+    height: unset;
+    transition: all 0.3s ease-in-out;
+    border-radius: 45px;
+    font-size: 18px;
+    font-weight: 700;
+
+    &.is-active {
+      color: $MainBrown;
+      background: $ActiveYellow;
+    }
+    &:hover {
+      color: $DarkBrown;
+      background: $ActiveYellow;
+    }
+  }
+
+  .el-tabs--top.el-tabs--card > .el-tabs__header .el-tabs__item:nth-child(2),
+  .el-tabs--top.el-tabs--card > .el-tabs__header .el-tabs__item:last-child {
+    padding: 0px 10px;
+  }
+
+  //第一個tab & 最後一個tab
+  .el-tabs--bottom > .el-tabs__header .el-tabs__item:nth-child(2),
+  .el-tabs--top > .el-tabs__header .el-tabs__item:nth-child(2),
+  .el-tabs--bottom > .el-tabs__header .el-tabs__item:last-child,
+  .el-tabs--top > .el-tabs__header .el-tabs__item:last-child {
+    padding: 10px 10px;
+  }
+
+  .el-tabs--card > .el-tabs__header {
+    border: none;
+  }
+  .el-tabs--card > .el-tabs__header .el-tabs__nav {
+    border: none;
+  }
+  .el-tabs--card > .el-tabs__header .el-tabs__item {
+    border: none;
+  }
+
+  //底線
+  .el-tabs__nav-wrap:after {
+    // background-color: #cdc4b2;
+    // height: 4px;
+    display: none !important;
+  }
+  .el-tabs__active-bar {
+    // background-color: $MainBrown;
+    // height: 4px;
+    display: none !important;
+  }
+  .el-tabs__content {
+    padding: 15px 0 0 0;
+    height: 100%;
+    .el-tab-pane {
+      height: 100%;
+    }
+  }
+}
+.pageTab {
+  height: calc(100% - 70px);
+  .el-tabs {
+    height: 100%;
+  }
+  .el-tabs__header {
+    margin: 0;
+  }
+  .el-tabs__item {
+    // @include setFont(18px, 50px, 600);
+    // color: $MainBrown;
+
+    padding: 0px 10px;
+    box-sizing: border-box;
+    height: unset;
+    transition: all 0.3s ease-in-out;
+    border-radius: 10px;
+    background: #fff;
+    &.is-active {
+      color: #fff;
+      background: #b5985e;
+      &:hover {
+        color: #fff;
+        background: #b5985e;
+      }
+    }
+    &:hover {
+      // color: $MainBrown;
+      background: $ActiveYellow;
+    }
+  }
+  .el-tabs--top.el-tabs--card > .el-tabs__header .el-tabs__item:nth-child(2),
+  .el-tabs--top.el-tabs--card > .el-tabs__header .el-tabs__item:last-child {
+    padding: 0px 10px;
+    transition: all 0.3s ease-in-out;
+  }
+  .el-tabs--card > .el-tabs__header {
+    border: none;
+    height: unset;
+  }
+  .el-tabs--card > .el-tabs__header .el-tabs__nav {
+    border: none;
+  }
+  .el-tabs--card > .el-tabs__header .el-tabs__item {
+    border: none;
+  }
+  .el-tabs__nav-wrap:after {
+    background-color: #cdc4b2;
+    height: 4px;
+  }
+  .el-tabs__active-bar {
+    // background-color: $MainBrown;
+    height: 4px;
+  }
+  .el-tabs__content {
+    padding: 30px 0 0 0;
+    height: 100%;
+    @include pad {
+      padding: 30px 0 0 0;
+    }
+    .el-tab-pane {
+      height: 100%;
+    }
+  }
+  .el-tabs__nav.is-stretch {
+    gap: 20px;
+  }
+}

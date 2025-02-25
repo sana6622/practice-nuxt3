@@ -33,6 +33,10 @@ export const useMenu = () => {
           subTitle: "openlayer Story+多table資料",
           link: "/openlayer/openlayerStoryByMultTable",
         },
+        {
+          subTitle: "準備畫面",
+          link: "/openlayer/prepareStory",
+        },
       ],
     },
     {

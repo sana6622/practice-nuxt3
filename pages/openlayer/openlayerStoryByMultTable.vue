@@ -28,7 +28,7 @@ const swiperKey = ref(0);
 const store = useMultTableStore();
 const router = useRouter();
 
-const heritageSites = ref([]);
+const landScape = ref([]);
 const selectIcon = ref("");
 
 const routsList = ref([...store.routes]);
@@ -189,7 +189,7 @@ const clearBaseLayer = () => {
 const scrollToSite = (siteName) => {
   console.log("要滑動到:", siteName);
   // 找到對應的景點物件
-  const targetSite = heritageSites.value.find((site) => site.name === siteName);
+  const targetSite = landScape.value.find((site) => site.name === siteName);
 
   if (targetSite) {
     // 更新圖片
@@ -212,15 +212,15 @@ const preventClick = () => {
 };
 
 const clearHandle = () => {
-  heritageSites.value = store.routes.find(
+  landScape.value = store.routes.find(
     (route) => route.id === currentRouteId.value
   ).spots;
-  console.log("clearHandle", heritageSites.value);
+  console.log("clearHandle", landScape.value);
   selectIcon.value = "";
-  mapRef.value.updateSites(heritageSites.value);
-  mapRef.value.flyTo(heritageSites.value[0].coords);
-  activeImage.value = heritageSites.value[0].image;
-  activeImageList.value = heritageSites.value[0].images;
+  mapRef.value.updateSites(landScape.value);
+  mapRef.value.flyTo(landScape.value[0].coords);
+  activeImage.value = landScape.value[0].image;
+  activeImageList.value = landScape.value[0].images;
 };
 
 //**測量***
@@ -473,8 +473,8 @@ const clearMarkers = () => {
 const changeRoute = (id) => {
   console.log("changeRoute", id);
   currentRouteId.value = id;
-  heritageSites.value = routsList.value.find((route) => route.id === id).spots;
-  console.log("heritageSites", heritageSites.value);
+  landScape.value = routsList.value.find((route) => route.id === id).spots;
+  console.log("landScape", landScape.value);
 
   init();
 };
@@ -518,7 +518,7 @@ const changeRoute = (id) => {
 //   }
 // };
 
-//**景點描術+路徑 */
+//**景點路徑 */
 const pathsData = ref([
   { distance: 100, time: 3 },
   { distance: 200, time: 5 },
@@ -526,13 +526,13 @@ const pathsData = ref([
   // ... 這裡是每段路徑的資訊
 ]);
 
-const heritageSitesWithPaths = computed(() => {
+const landScapeWithPaths = computed(() => {
   const result = [];
-  heritageSites.value.forEach((site, index) => {
+  landScape.value.forEach((site, index) => {
     result.push({ type: "site", data: site });
 
     // 插入對應的路徑資訊（最後一個景點後不插入）
-    if (index < heritageSites.value.length - 1 && pathsData.value[index]) {
+    if (index < landScape.value.length - 1 && pathsData.value[index]) {
       result.push({ type: "path", data: pathsData.value[index] });
     }
   });
@@ -547,17 +547,17 @@ watch(
         (route) => route.id === currentRouteId.value
       ).spots;
 
-      heritageSites.value = currentAllSpots.filter(
+      landScape.value = currentAllSpots.filter(
         (site) => site.icon === newIconId
       );
 
-      console.log("watch", heritageSites.value.length);
-      if (heritageSites.value.length > 0) {
-        console.log("select heritageSite", heritageSites);
-        mapRef.value.updateSites(heritageSites.value);
-        mapRef.value.flyTo(heritageSites.value[0].coords);
-        activeImage.value = heritageSites.value[0].image;
-        activeImageList.value = heritageSites.value[0].images;
+      console.log("watch", landScape.value.length);
+      if (landScape.value.length > 0) {
+        console.log("select heritageSite", landScape);
+        mapRef.value.updateSites(landScape.value);
+        mapRef.value.flyTo(landScape.value[0].coords);
+        activeImage.value = landScape.value[0].image;
+        activeImageList.value = landScape.value[0].images;
       } else {
         //沒有資料 回到預設值
         alert("沒有資料");
@@ -565,7 +565,7 @@ watch(
       }
     } else {
       // 如果沒有選擇 icon，回復所有數據
-      heritageSites.value = store.routes.find(
+      landScape.value = store.routes.find(
         (route) => route.id === currentRouteId.value
       ).spots;
     }
@@ -579,16 +579,16 @@ watch(activeImageList, (newList) => {
 
 //初始化
 const init = () => {
-  mapRef.value.updateSites(heritageSites.value);
-  activeImage.value = heritageSites.value[0].image;
-  activeImageList.value = heritageSites.value[0].images;
-  mapRef.value.flyTo(heritageSites.value[0].coords);
+  mapRef.value.updateSites(landScape.value);
+  activeImage.value = landScape.value[0].image;
+  activeImageList.value = landScape.value[0].images;
+  mapRef.value.flyTo(landScape.value[0].coords);
 };
 
 onMounted(() => {
   console.log("取出Pinia資料", store.routes);
   currentRouteId.value = store.routes[0].id;
-  heritageSites.value = [...store.routes[0].spots];
+  landScape.value = [...store.routes[0].spots];
   init();
   // console.log("iconList", iconList);
 });
@@ -832,7 +832,7 @@ onMounted(() => {
 
         <!-- <ul>
           <li
-            v-for="(site, index) in heritageSites"
+            v-for="(site, index) in landScape"
             :key="index"
             class="site"
             :data-name="site.name"
@@ -844,8 +844,9 @@ onMounted(() => {
           </li>
         </ul> -->
         <ul>
+          <p></p>
           <li
-            v-for="(item, index) in heritageSitesWithPaths"
+            v-for="(item, index) in landScapeWithPaths"
             :key="index"
             class="site"
             :class="{ 'path-info': item.type === 'path' }"
@@ -871,7 +872,7 @@ onMounted(() => {
       <div class="map-area">
         <OpenlayerMapStory
           ref="mapRef"
-          :heritageSites="heritageSites"
+          :landScape="landScape"
           @select-site="scrollToSite"
           @update-measurement="updateMeasurement"
           @click-site="clickSite"

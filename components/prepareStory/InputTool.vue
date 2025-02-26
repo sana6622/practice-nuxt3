@@ -2,7 +2,7 @@
 import { ref, computed, defineProps, defineEmits } from "vue";
 import { ElMessage } from "element-plus";
 const props = defineProps({
-  modelValue: String,
+  modelValue: [String, Number],
   type: {
     type: String,
     default: "text", // 可選 'coordinate' 或 'address'
@@ -30,7 +30,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
-const inputValue = ref(props.modelValue || "");
+// const inputValue = ref(props.modelValue || "");
 
 // 🔹 定義坐標數字驗證的正則表達式
 const regx = reactive({
@@ -65,12 +65,12 @@ const formatCoordinate = (value) => {
 
 // 🔹 `computed()` 用來即時格式化輸入
 const formattedValue = computed({
-  get: () => inputValue.value,
+  get: () => props.modelValue,
   set: (val) => {
     if (props.type === "coordinate") {
-      val = formatCoordinate(val); // 使用格式化函數
+      val = formatCoordinate(val);
     }
-    inputValue.value = val;
+    emit("update:modelValue", val); // 確保數據同步到父層
   },
 });
 </script>

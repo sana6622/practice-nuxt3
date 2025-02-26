@@ -1,4 +1,6 @@
 <script setup>
+import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
+import { windowStore } from "@/stores/prepareMap.js";
 const props = defineProps({
   title: {
     type: String,
@@ -14,15 +16,15 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(["close"]);
-// const { width } = useWindowSize();
+const { width } = useWindowSize();
 
-// const window = windowStore();
+const window = windowStore();
 
 const showToolDialog = ref(false);
 
-// function slideWindow() {
-//   window.hide = !window.hide;
-// }
+function slideWindow() {
+  window.hide = !window.hide;
+}
 </script>
 <template>
   <!-- <div class="mapToolWindow" :class="{ show: !window.hide }"> -->
@@ -30,17 +32,19 @@ const showToolDialog = ref(false);
     <div class="toolTitle">
       {{ title }}
       <div class="toolBtnGp">
-        <span
-          v-if="width < 1366"
-          class="slideBtn"
-          :class="{ open: window.hide === false }"
-          @click="slideWindow"
-          ><img
-            src="~/assets/img/slideDown.svg"
-            width="20px"
-            height="20px"
-            alt=""
-        /></span>
+        <ClientOnly>
+          <span
+            v-show="width < 1366"
+            class="slideBtn"
+            :class="{ open: window.hide === false }"
+            @click="slideWindow"
+            ><img
+              src="~/assets/img/slideDown.svg"
+              width="20px"
+              height="20px"
+              alt=""
+          /></span>
+        </ClientOnly>
         <span class="closeBtn" @click="emit('close')"
           ><img src="~/assets/img/close.svg" width="20px" height="20px" alt=""
         /></span>

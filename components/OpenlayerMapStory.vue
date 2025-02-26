@@ -37,7 +37,7 @@ import { getIconColor } from "@/constants/color";
 import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
 // **Props：接收父層傳來的景點資訊與當前選中點**
 const props = defineProps({
-  heritageSites: Array, // 所有景點資訊（父層傳入）
+  landScape: Array, // 所有景點資訊（父層傳入）
   activeSite: Object, // 當前選中的景點
 });
 
@@ -52,7 +52,7 @@ const vectorSource = new VectorSource();
 const clusterSource = ref(null);
 const clusterLayer = ref(null);
 const tamsuiCenter = fromLonLat([121.44572903840833, 25.16787143460989]); // 預設中心
-const heritageSites = ref([...props.heritageSites]);
+const landScape = ref([...props.landScape]);
 const showIcons = ref(true);
 const showPaths = ref(true);
 
@@ -171,7 +171,7 @@ const initMap = () => {
   });
 
   mapInstance.value.addLayer(vectorLayer);
-  addHeritageSites();
+  addlandScape();
 
   mapInstance.value.on("moveend", () => {
     if (!showPaths.value) {
@@ -196,11 +196,11 @@ const lineLayer = new VectorLayer({
 });
 
 // **加入標記（包含父層傳入的資料）**
-const addHeritageSites = () => {
+const addlandScape = () => {
   vectorSource.clear(); // 清除舊的標記
   lineSource.clear(); // 清除舊的線段
 
-  const features = heritageSites.value.map((site) => {
+  const features = landScape.value.map((site) => {
     const coordinates = fromLonLat(site.coords);
     const feature = new Feature({
       geometry: new Point(coordinates),
@@ -269,8 +269,8 @@ const checkClusterStatus = () => {
 
   //畫線
   lineSource.clear();
-  if (heritageSites.value.length > 1) {
-    const lineCoordinates = heritageSites.value.map((site) =>
+  if (landScape.value.length > 1) {
+    const lineCoordinates = landScape.value.map((site) =>
       fromLonLat(site.coords)
     );
     const lineFeature = new Feature({
@@ -388,7 +388,7 @@ const handleFeatureClick = (event) => {
       const iconName = firstFeatureProps.name;
       const coords = firstFeature.getGeometry().getCoordinates();
 
-      selectedFeature.value = heritageSites.value.find(
+      selectedFeature.value = landScape.value.find(
         (site) => site.name === iconName
       );
       dialogVisible.value = true;
@@ -510,8 +510,8 @@ const updatePaths = (showPath) => {
 
 //重新賦值(當父層做景點篩選時)
 const updateSites = (newSites) => {
-  heritageSites.value = [...newSites]; // 重新賦值
-  addHeritageSites(); // 重新繪製標示
+  landScape.value = [...newSites]; // 重新賦值
+  addlandScape(); // 重新繪製標示
 };
 
 //初始化測量工具

@@ -28,7 +28,7 @@ const swiperKey = ref(0);
 const store = useTableStore();
 const router = useRouter();
 
-const heritageSites = ref([...store.tables["group1"]]);
+const landScape = ref([...store.tables["group1"]]);
 const selectIcon = ref("");
 
 const activeImage = ref(""); // 當前顯示的圖片
@@ -182,7 +182,7 @@ const clearBaseLayer = () => {
 const scrollToSite = (siteName) => {
   console.log("要滑動到:", siteName);
   // 找到對應的景點物件
-  const targetSite = heritageSites.value.find((site) => site.name === siteName);
+  const targetSite = landScape.value.find((site) => site.name === siteName);
 
   if (targetSite) {
     // 更新圖片
@@ -205,12 +205,12 @@ const preventClick = () => {
 };
 
 const clearHandle = () => {
-  heritageSites.value = [...store.tables["group1"]];
+  landScape.value = [...store.tables["group1"]];
   selectIcon.value = "";
-  mapRef.value.updateSites(heritageSites.value);
-  mapRef.value.flyTo(heritageSites.value[0].coords);
-  activeImage.value = heritageSites.value[0].image;
-  activeImageList.value = heritageSites.value[0].images;
+  mapRef.value.updateSites(landScape.value);
+  mapRef.value.flyTo(landScape.value[0].coords);
+  activeImage.value = landScape.value[0].image;
+  activeImageList.value = landScape.value[0].images;
 };
 
 //**測量***
@@ -463,16 +463,16 @@ watch(
   () => selectIcon.value,
   (newIconId) => {
     if (newIconId) {
-      heritageSites.value = store.tables["group1"].filter(
+      landScape.value = store.tables["group1"].filter(
         (site) => site.icon === newIconId
       );
-      console.log("watch", heritageSites.value.length);
-      if (heritageSites.value.length > 0) {
-        console.log("select heritageSite", heritageSites);
-        mapRef.value.updateSites(heritageSites.value);
-        mapRef.value.flyTo(heritageSites.value[0].coords);
-        activeImage.value = heritageSites.value[0].image;
-        activeImageList.value = heritageSites.value[0].images;
+      console.log("watch", landScape.value.length);
+      if (landScape.value.length > 0) {
+        console.log("select heritageSite", landScape);
+        mapRef.value.updateSites(landScape.value);
+        mapRef.value.flyTo(landScape.value[0].coords);
+        activeImage.value = landScape.value[0].image;
+        activeImageList.value = landScape.value[0].images;
       } else {
         //沒有資料 回到預設值
         alert("沒有資料");
@@ -480,7 +480,7 @@ watch(
       }
     } else {
       // 如果沒有選擇 icon，回復所有數據
-      heritageSites.value = [...store.tables["group1"]];
+      landScape.value = [...store.tables["group1"]];
     }
   }
 );
@@ -492,9 +492,9 @@ watch(activeImageList, (newList) => {
 
 onMounted(() => {
   console.log("取出Pinia資料", store.tables["group1"]);
-  activeImage.value = heritageSites.value[0].image;
-  activeImageList.value = heritageSites.value[0].images;
-  mapRef.value.flyTo(heritageSites.value[0].coords);
+  activeImage.value = landScape.value[0].image;
+  activeImageList.value = landScape.value[0].images;
+  mapRef.value.flyTo(landScape.value[0].coords);
   console.log("iconList", iconList);
 });
 </script>
@@ -679,7 +679,7 @@ onMounted(() => {
 
         <ul>
           <li
-            v-for="(site, index) in heritageSites"
+            v-for="(site, index) in landScape"
             :key="index"
             class="site"
             :data-name="site.name"
@@ -696,7 +696,7 @@ onMounted(() => {
       <div class="map-area">
         <OpenlayerMapStory
           ref="mapRef"
-          :heritageSites="heritageSites"
+          :landScape="landScape"
           @select-site="scrollToSite"
           @update-measurement="updateMeasurement"
           @click-site="clickSite"

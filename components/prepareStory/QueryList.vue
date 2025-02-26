@@ -2,6 +2,11 @@
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation, Pagination } from "swiper/modules";
 
+const props = defineProps({
+  mapLocationCoord: { type: Array, default: "" }, //點擊地圖任一點打點定位
+  selectSpotName: { type: String, default: "" }, //點擊icon
+});
+
 const store = useMultTableStore();
 
 const isCollapsed = ref(false); // 控制 queryList 收合
@@ -14,7 +19,9 @@ const activeName = ref("route");
 const activePositionTab = ref("positionAddress"); // 預設為 "地址定位"
 
 const routesList = ref([]); // 存放所有路線
-const currentRouteId = ref("route2"); // **預設路線 ID**
+const currentRouteId = ref("route1"); // **預設路線 ID**
+const currentRoute = ref(""); //路線內所有資料
+const currentSpots = ref([]);
 const activeImage = ref("");
 const activeImageList = ref([]);
 const activeSit = ref({});
@@ -24,16 +31,44 @@ const mapRef = ref(null); // OpenLayer Map 元件的 ref
 const dialogVisible = ref(false);
 
 const formData = reactive({
-  address: "",
-  lat: "",
-  lon: "",
+  address: "新北市淡水區中正路229-9號",
+  lon: "121.41218480726137",
+  lat: "25.18327793537947",
+  radius: 200,
 });
 
-const currentRoute = computed(() => {
-  return (
-    routesList.value.find((route) => route.id === currentRouteId.value) || null
-  );
+//Todo:景點路徑 假資料 */
+const pathsData = ref([
+  { distance: 100, time: 3 },
+  { distance: 200, time: 5 },
+  { distance: 150, time: 4 },
+  // ... 這裡是每段路徑的資訊
+]);
+
+//景點+路徑
+const landScapeWithPaths = computed(() => {
+  if (!currentRoute.value || !currentRoute.value.spots) {
+    return []; // 確保 currentRoute.value.spots 不為 undefined
+  }
+  const result = [];
+  console.log("currentRoute.value spots", currentRoute.value.spots);
+  currentRoute.value.spots.forEach((site, index) => {
+    result.push({ type: "site", data: site });
+
+    // 插入對應的路徑資訊（最後一個景點後不插入）
+    if (index < currentRoute.value.spots.length - 1 && pathsData.value[index]) {
+      result.push({ type: "path", data: pathsData.value[index] });
+    }
+  });
+  return result;
 });
+
+// hover時，更新地圖與圖片
+const hoverLocation = (site) => {
+  emit("update-activeSpot", site.coords);
+  activeImage.value = site.image;
+  activeImageList.value = site.images;
+};
 
 // 🔹 動態計算 queryList 的寬度
 const queryListWidth = computed(() =>
@@ -72,16 +107,163 @@ const toggleRoute = (route) => {
 
   // ✅ 更新所有路線的 `enabled` 狀態
   routesList.value.forEach((r) => (r.enabled = r.id === currentRouteId.value));
+  currentRoute.value =
+    routesList.value.find((route) => route.id === currentRouteId.value) || null;
+  console.log("currentRoute", currentRoute.value);
 
+  emit("update-landscape", route.spots);
   ElMessage.success(`已切換至 ${route.enabled ? route.name : "無"} `);
 };
 
-// **onMounted：初始化 routesList**
+// **發送事件給父層**
+const emit = defineEmits([
+  "update-landscape",
+  "update-activeSpot",
+  "update-position",
+  "update-circleRange",
+]);
+
+const searchPosition = () => {
+  console.log("activer", activePositionTab.value);
+  console.log("searchAddress", formData);
+  if (activePositionTab.value === "positionAddress") {
+    positionAddressHandle();
+  } else if (activePositionTab.value === "positionCoord") {
+    positionCoordHandle();
+  }
+};
+
+//***設定環域變數****************
+const setCircleRange = async () => {
+  await nextTick();
+  console.log("formdata", formData);
+  const rad = parseFloat(formData.radius);
+  let lon, lat;
+  if (isNaN(rad)) {
+    alert("請輸入有效的經度和緯度");
+    return;
+  }
+
+  if (activePositionTab.value === "positionAddress") {
+    [lon, lat] = await positionAddressHandle();
+    emit("updateCircleRange", lon, lat, rad);
+  } else if (activePositionTab.value === "positionCoord") {
+    [lon, lat] = positionCoordHandle();
+    emit("updateCircleRange", lon, lat, rad);
+  } else if (activePositionTab.value === "positionMap") {
+    console.log("mapLocationCoord11", props.mapLocationCoord);
+    emit(
+      "updateCircleRange",
+      props.mapLocationCoord[0],
+      props.mapLocationCoord[1],
+      rad
+    );
+  }
+};
+
+//地址定位
+const positionAddressHandle = async () => {
+  if (!formData.address) {
+    alert("請輸入地址！");
+    return;
+  }
+  try {
+    const response = await fetch(
+      `https://api.nlsc.gov.tw/idc/TextQueryMap/${encodeURIComponent(
+        formData.address
+      )}`
+    );
+
+    console.log("response", response);
+    const responseText = await response.text(); // 取得回應的 XML 文字
+
+    // 🔹 解析 XML
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(responseText, "application/xml");
+
+    // 🔹 取得 `<LOCATION>` 節點
+    const locationNode = xmlDoc.querySelector("LOCATION");
+    console.log("locationNode", locationNode);
+
+    // 🔹 解析經緯度
+    const locationText = locationNode.textContent;
+    if (!locationText) {
+      alert("找不到該地址對應的經緯度");
+      return;
+    }
+
+    const [lon, lat] = locationText.split(",").map(parseFloat);
+
+    emit("updatePosition", [lon, lat]);
+    return [lon, lat];
+    // mapRef.value.setLocation(lon, lat);
+  } catch (error) {
+    console.error("地址轉換失敗", error);
+    alert("無法獲取位置信息，請稍後再試！");
+  }
+};
+
+//座標定位
+const positionCoordHandle = () => {
+  const lon = parseFloat(formData.lon);
+  const lat = parseFloat(formData.lat);
+  if (!isNaN(lon) && !isNaN(lat)) {
+    emit("updatePosition", [lon, lat]);
+    return [lon, lat];
+  } else {
+    alert("請輸入有效的經度和緯度");
+  }
+};
+
+const clearHandle = () => {
+  Object.keys(formData).forEach((key) => {
+    formData[key] = "";
+  });
+  emit("clearMap"); // 觸發事件，通知父層
+};
+
+/**滑動到對應 景點物件*/
+const scrollToSite = (siteName) => {
+  const targetSite = currentRoute.value.spots.find((site) => {
+    return site.name === siteName;
+  });
+  console.log("targetSite", targetSite);
+
+  if (targetSite) {
+    // 更新圖片
+    activeImage.value = targetSite.image;
+    activeImageList.value = targetSite.images;
+
+    nextTick(() => {
+      const targetLi = document.querySelector(`li[data-name="${siteName}"]`);
+      if (targetLi) {
+        targetLi.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  } else {
+    console.warn("找不到對應的景點:", siteName);
+  }
+};
+
+// 🔍 監聽 props.selectSpotName，當變更時執行 scrollToSite
+watch(
+  () => props.selectSpotName,
+  (newSpotName) => {
+    if (newSpotName) {
+      console.log("new", newSpotName);
+      scrollToSite(newSpotName);
+    }
+  }
+);
+
 onMounted(() => {
   routesList.value = store.routes.map((route) => ({
     ...route,
     enabled: route.id === currentRouteId.value, // **只開啟預設路線**
   }));
+  currentRoute.value = routesList.value.find(
+    (route) => route.id === currentRouteId.value
+  ) || { spots: [] };
 
   console.log("routesList.value", routesList.value);
 });
@@ -109,13 +291,31 @@ onMounted(() => {
               </div>
 
               <ul class="spots">
-                <li v-for="spot in currentRoute?.spots" :key="spot.id">
-                  <p>{{ spot.name }}</p>
-                  <div class="spotsImage">
-                    <img :src="spot.images[0]" alt="" />
-                  </div>
+                <li
+                  v-for="(item, index) in landScapeWithPaths"
+                  :key="index"
+                  class="site"
+                  :class="{ 'path-info': item.type === 'path' }"
+                  :data-name="item.type === 'site' ? item.data.name : ''"
+                  @mouseenter="
+                    item.type === 'site' ? hoverLocation(item.data) : null
+                  "
+                >
+                  <template v-if="item.type === 'site'">
+                    <p>{{ item.data.name }}</p>
+                    <div class="spotsImage">
+                      <img :src="item.data.images[0]" alt="" />
+                    </div>
 
-                  <p>{{ spot.des }}</p>
+                    <p>{{ item.data.des }}</p>
+                  </template>
+
+                  <template v-else>
+                    <p>
+                      公尺: {{ item.data.distance }} | 時間:
+                      {{ item.data.time }}分
+                    </p>
+                  </template>
                 </li>
               </ul>
             </div>
@@ -138,39 +338,51 @@ onMounted(() => {
                 class="positionCoord"
               >
                 <PrepareStoryInputTool
-                  v-model="formData.lat"
-                  type="coordinate"
-                  label="緯度"
-                  placeholder="請輸入緯度"
-                  required
-                />
-                <PrepareStoryInputTool
                   v-model="formData.lon"
                   type="coordinate"
                   label="經度"
                   placeholder="請輸入經度"
                   required
                 />
+                <PrepareStoryInputTool
+                  v-model="formData.lat"
+                  type="coordinate"
+                  label="緯度"
+                  placeholder="請輸入緯度"
+                  required
+                />
               </el-tab-pane>
               <el-tab-pane label="地圖定位" name="positionMap">
                 <div>
-                  <p>經度:</p>
-                  <p>緯度:</p>
+                  <p>
+                    經度:
+                    <span>
+                      {{ parseFloat(mapLocationCoord[0]).toFixed(5) }}</span
+                    >
+                  </p>
+                  <p>
+                    緯度:
+                    <span>{{
+                      parseFloat(mapLocationCoord[1]).toFixed(5)
+                    }}</span>
+                  </p>
                 </div>
               </el-tab-pane>
             </el-tabs>
 
             <PrepareStoryInputTool
-              v-model="formData.lon"
+              v-model="formData.radius"
               type="coordinate"
               label="環域"
               placeholder="請輸入環域範圍"
             />
-            <el-button>清除</el-button>
-            <el-button v-if="activePositionTab !== 'positionMap'"
+            <el-button @click="clearHandle">清除</el-button>
+            <el-button
+              v-if="activePositionTab !== 'positionMap'"
+              @click="searchPosition"
               >定位查詢</el-button
             >
-            <el-button>環域查詢</el-button>
+            <el-button @click="setCircleRange">環域查詢</el-button>
             <ul class="spots buffer">
               <!--Todo:改環域景點-->
               <li v-for="spot in currentRoute?.spots" :key="spot.id">
@@ -301,9 +513,21 @@ onMounted(() => {
         }
       }
     }
-    li:hover {
+    .site:hover {
       border: 1px solid rgb(112, 145, 128);
       cursor: pointer;
+    }
+    .path-info {
+      background: #f0f0f0;
+      background-color: transparent;
+      border-left: 3px solid black;
+      border-radius: 0;
+      margin-left: 20px;
+    }
+    .path-info:hover {
+      border: 1px solid transparent;
+      border-left: 3px solid black;
+      cursor: default;
     }
   }
   .buffer {

@@ -37,6 +37,10 @@ export const useMenu = () => {
           subTitle: "準備畫面",
           link: "/openlayer/prepareStory",
         },
+        {
+          subTitle: "準備畫面1",
+          link: "/openlayer/prepareStory1",
+        },
       ],
     },
     {

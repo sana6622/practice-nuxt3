@@ -40,8 +40,8 @@ import { getIconColor } from "@/constants/color";
 import { useWindowSize } from "@vueuse/core"; //監聽視窗大小的變化
 
 //Todo:更改資料來源
-const store = useMultTableStore();
-const landScape = ref([]);
+const store = useMapDataStore();
+const landScape = ref([]); //目前地圖使用景點
 
 // **Props：接收父層傳來的景點資訊與當前選中點**
 // const props = defineProps({
@@ -179,10 +179,10 @@ const addlandScape = () => {
   lineSource.clear(); // 清除舊的線段
 
   const features = landScape.value.map((site) => {
-    const coordinates = fromLonLat(site.coords);
+    const coordinates = fromLonLat(site.lonLat);
     const feature = new Feature({
       geometry: new Point(coordinates),
-      name: site.name,
+      name: site.title,
       icon: site.icon,
       bgc: site.bgc,
     });
@@ -221,10 +221,9 @@ const addlandScape = () => {
 //畫線
 const checkClusterStatus = () => {
   if (!clusterSource.value) return;
-  console.log("checkClusterS clusterSource.value", clusterSource.value);
 
   const clusters = clusterSource.value.getFeatures();
-  console.log("checkClusterStatus111", clusters);
+
   let hasCluster = false;
 
   clusters.forEach((cluster) => {
@@ -250,7 +249,7 @@ const checkClusterStatus = () => {
   lineSource.clear();
   if (landScape.value.length > 1) {
     const lineCoordinates = landScape.value.map((site) =>
-      fromLonLat(site.coords)
+      fromLonLat(site.lonLat)
     );
     const lineFeature = new Feature({
       geometry: new LineString(lineCoordinates),
@@ -316,7 +315,7 @@ const clusterStyle = (feature) => {
         }),
         //icon下方文字
         text: new Text({
-          text: item.name,
+          text: item.title,
           offsetY: 35, // 垂直偏移
           font: "bold 12px Noto Sans TC",
           textAlign: "center",
@@ -364,11 +363,11 @@ const handleFeatureClick = (event) => {
       // **這是單個標記**
       const firstFeature = properties.features[0]; // 取第一個 feature
       const firstFeatureProps = firstFeature.getProperties(); // 再取 properties
-      const iconName = firstFeatureProps.name;
+      const iconName = firstFeatureProps.title;
       const coords = firstFeature.getGeometry().getCoordinates();
 
       selectedFeature.value = landScape.value.find(
-        (site) => site.name === iconName
+        (site) => site.title === iconName
       );
       dialogVisible.value = true;
 
@@ -497,6 +496,9 @@ const updateSites = (newSites) => {
 //加入定位點
 const setLocation = (lon, lat) => {
   console.log("setLocat", lon, lat);
+  //清空
+  clearLocation(), clearCircleRange(), clearHandleMapClick();
+
   if (!mapInstance.value) return;
 
   const coords = fromLonLat([lon, lat]); // 轉換成地圖座標
@@ -690,6 +692,10 @@ const showCurrentLocation = () => {
 
 //** 點擊任一點 進行打點標記**********
 const handleMapClick = (event) => {
+  //清空畫面
+  clearCircleRange();
+  clearLocation();
+
   if (!mapInstance.value) return;
 
   const clickedCoordinate = event.coordinate; // 取得點擊的地圖座標
@@ -824,7 +830,7 @@ const zoomHandle = (type) => {
 const updateLandscape = (newSpots) => {
   landScape.value = [...newSpots];
   addlandScape(); // 重新繪製標示
-  flyTo(landScape.value[0].coords);
+  flyTo(landScape.value[0].lonLat);
 };
 
 const updateActiveSpot = (spot) => {
@@ -845,11 +851,14 @@ const clearMap = () => {
 };
 
 onMounted(() => {
-  landScape.value = [...store.routes[0].spots];
+  console.log("store", store.mapList[0].pointList);
+  landScape.value = [...store.mapList[0].pointList];
+  console.log("landScape.value", landScape.value);
+
   console.log(
     "landScape.value",
-    landScape.value[0].coords[0],
-    landScape.value[0].coords[1]
+    landScape.value[0].lonLat[0],
+    landScape.value[0].lonLat[1]
   );
   // tamsuiCenter.value = fromLonLat([
   //   landScape.value[0].coords[0],
@@ -918,7 +927,7 @@ defineExpose({
 
 <template>
   <div class="prepareStory">
-    <PrepareStoryQueryList
+    <PrepareStoryQueryList1
       @update-landscape="updateLandscape"
       @update-activeSpot="updateActiveSpot"
       @update-position="updatePosition"
@@ -926,7 +935,7 @@ defineExpose({
       @clear-map="clearMap"
       :mapLocationCoord="mapLocationCoord"
       :selectSpotName="selectSpotName"
-    ></PrepareStoryQueryList>
+    ></PrepareStoryQueryList1>
 
     <div ref="mapContainer" class="map-container"></div>
 
@@ -974,8 +983,8 @@ defineExpose({
           </Swiper>
         </div>
 
-        <h3>{{ selectedFeature.name }}</h3>
-        <p v-if="selectedFeature.des">{{ selectedFeature.des }}</p>
+        <h3>{{ selectedFeature.title }}</h3>
+        <p v-if="selectedFeature.content">{{ selectedFeature.content }}</p>
 
         <p v-if="selectedFeature.location">
           📍 位置：{{ selectedFeature.location }}

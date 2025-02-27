@@ -5,6 +5,7 @@ import { Navigation, Pagination } from "swiper/modules";
 const props = defineProps({
   mapLocationCoord: { type: Array, default: "" }, //點擊地圖任一點打點定位
   selectSpotName: { type: String, default: "" }, //點擊icon
+  selectSpotId: { type: String, default: "" }, //點擊icon
 });
 
 const store = useMapDataStore();
@@ -19,11 +20,10 @@ const activeName = ref("route");
 const activePositionTab = ref("positionAddress"); // 預設為 "地址定位"
 
 const routesList = ref([]); // 存放所有路線
-const currentRouteId = ref("map1"); // **預設路線 ID**
+const currentRouteId = ref("map0"); // **預設路線 ID**
 const currentRoute = ref(""); //路線內所有資料
 const currentSpots = ref([]);
-const activeImage = ref("");
-const activeImageList = ref([]);
+
 const activeSit = ref({});
 
 const bufferList = ref([]); //環域景點
@@ -69,8 +69,6 @@ const landScapeWithPaths = computed(() => {
 // hover時，更新地圖與圖片
 const hoverLocation = (site) => {
   emit("update-activeSpot", site.lonLat);
-  activeImage.value = site.image;
-  activeImageList.value = site.images;
 };
 
 // 🔹 動態計算 queryList 的寬度
@@ -231,19 +229,16 @@ const clearHandle = () => {
 };
 
 /**滑動到對應 景點物件*/
-const scrollToSite = (siteName) => {
-  const targetSite = currentRoute.value.spots.find((site) => {
-    return site.name === siteName;
+const scrollToSite = (id) => {
+  const targetSite = currentRoute.value.pointList.find((site) => {
+    return site.id === id;
   });
   console.log("targetSite", targetSite);
 
   if (targetSite) {
-    // 更新圖片
-    activeImage.value = targetSite.image;
-    activeImageList.value = targetSite.images;
-
     nextTick(() => {
-      const targetLi = document.querySelector(`li[data-name="${siteName}"]`);
+      const targetLi = document.querySelector(`li[data-id="${id}"]`);
+      console.log(" targetLi", targetLi);
       if (targetLi) {
         targetLi.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -255,11 +250,12 @@ const scrollToSite = (siteName) => {
 
 // 🔍 監聽 props.selectSpotName，當變更時執行 scrollToSite
 watch(
-  () => props.selectSpotName,
-  (newSpotName) => {
-    if (newSpotName) {
-      console.log("new", newSpotName);
-      scrollToSite(newSpotName);
+  () => props.selectSpotId,
+  (newSpotId) => {
+    console.log("newSpot");
+    if (newSpotId) {
+      console.log("new", newSpotId);
+      scrollToSite(newSpotId);
     }
   }
 );
@@ -297,14 +293,14 @@ onMounted(() => {
                 </p>
                 <el-button @click="choseHandler">路線選擇</el-button>
               </div>
-              <pre>{{ landScapeWithPaths }}</pre>
+
               <ul class="spots">
                 <li
                   v-for="(item, index) in landScapeWithPaths"
                   :key="index"
                   class="site"
                   :class="{ 'path-info': item.type === 'path' }"
-                  :data-name="item.type === 'site' ? item.data.name : ''"
+                  :data-id="item.type === 'site' ? item.data.id : ''"
                   @mouseenter="
                     item.type === 'site' ? hoverLocation(item.data) : null
                   "
@@ -481,7 +477,7 @@ onMounted(() => {
     margin: 0;
     padding: 0;
     overflow-y: auto;
-    max-height: 700px;
+    max-height: 500px;
 
     //捲軸底色
     &::-webkit-scrollbar-track {

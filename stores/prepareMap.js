@@ -18,6 +18,7 @@ export const useMapDataStore = defineStore("mapDataStore", {
         mapID: "map0",
         pointList: [
           {
+            //Todo: 缺圖片
             title: "紅毛城",
             content: "這座山頂的西班牙堡壘建於 1629 年，可以俯瞰美麗的河景。",
             geometry: "",

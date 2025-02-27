@@ -64,6 +64,7 @@ const tamsuiCenter = fromLonLat([121.44572903840833, 25.16787143460989]); // 預
 
 const mapLocationCoord = ref([]);
 const selectSpotName = ref(""); // 點擊的景點icon
+const selectSpotId = ref(""); // 點擊的景點icon id
 const showIcons = ref(true);
 const showPaths = ref(true);
 
@@ -182,7 +183,9 @@ const addlandScape = () => {
     const coordinates = fromLonLat(site.lonLat);
     const feature = new Feature({
       geometry: new Point(coordinates),
+      id: site.id,
       name: site.title,
+      order: String(site.order),
       icon: site.icon,
       bgc: site.bgc,
     });
@@ -315,7 +318,7 @@ const clusterStyle = (feature) => {
         }),
         //icon下方文字
         text: new Text({
-          text: item.title,
+          text: item.name,
           offsetY: 35, // 垂直偏移
           font: "bold 12px Noto Sans TC",
           textAlign: "center",
@@ -337,11 +340,20 @@ const clusterStyle = (feature) => {
         }),
       }),
       new Style({
-        image: new Icon({
-          anchor: [0.5, 0.5],
-          // src: getIcon(item.type),
-          src: getIconPathById(item.icon),
-          scale: 1,
+        //icon 圖示
+        // image: new Icon({
+        //   anchor: [0.5, 0.5],
+        //   // src: getIcon(item.type),
+        //   src: getIconPathById(item.icon),
+        //   scale: 1,
+        // }),
+
+        //icon 文字
+        text: new Text({
+          text: item.order, // 顯示 order
+          offsetY: 2,
+          font: "bold 14px Arial",
+          fill: new Fill({ color: "#fff" }),
         }),
       }),
     ];
@@ -363,13 +375,16 @@ const handleFeatureClick = (event) => {
       // **這是單個標記**
       const firstFeature = properties.features[0]; // 取第一個 feature
       const firstFeatureProps = firstFeature.getProperties(); // 再取 properties
-      const iconName = firstFeatureProps.title;
+
+      const selectId = firstFeatureProps.id;
+      // const iconName = firstFeatureProps.name;
       const coords = firstFeature.getGeometry().getCoordinates();
 
       selectedFeature.value = landScape.value.find(
-        (site) => site.title === iconName
+        (site) => site.id === selectId
       );
       dialogVisible.value = true;
+      console.log("slectFeature", selectedFeature.value);
 
       const pixel = event.pixel; // 取得點擊位置
       console.log("pixel", pixel);
@@ -381,7 +396,8 @@ const handleFeatureClick = (event) => {
         duration: 500,
         maxZoom: 20,
       });
-      selectSpotName.value = iconName;
+      // selectSpotName.value = iconName;
+      selectSpotId.value = selectId;
       // emit("select-site", iconName); // 傳遞點擊的 Icon 名稱給父層
     }
   });
@@ -935,6 +951,7 @@ defineExpose({
       @clear-map="clearMap"
       :mapLocationCoord="mapLocationCoord"
       :selectSpotName="selectSpotName"
+      :selectSpotId="selectSpotId"
     ></PrepareStoryQueryList1>
 
     <div ref="mapContainer" class="map-container"></div>

@@ -4,8 +4,8 @@ import { Navigation, Pagination } from "swiper/modules";
 
 const props = defineProps({
   mapLocationCoord: { type: Array, default: "" }, //點擊地圖任一點打點定位
-  selectSpotName: { type: String, default: "" }, //點擊icon
   selectSpotId: { type: String, default: "" }, //點擊icon
+  bufferSpots: { type: Array, default: [] }, //環域景點
 });
 
 const store = useMapDataStore();
@@ -248,7 +248,6 @@ const scrollToSite = (id) => {
   }
 };
 
-// 🔍 監聽 props.selectSpotName，當變更時執行 scrollToSite
 watch(
   () => props.selectSpotId,
   (newSpotId) => {
@@ -389,13 +388,13 @@ onMounted(() => {
             <el-button @click="setCircleRange">環域查詢</el-button>
             <ul class="spots buffer">
               <!--Todo:改環域景點-->
-              <li v-for="spot in currentRoute?.spots" :key="spot.id">
-                <p>{{ spot.name }}</p>
+              <li v-for="spot in bufferSpots" :key="spot.id">
+                <p>{{ spot.title }}</p>
                 <div class="spotsImage">
                   <img :src="spot.images[0]" alt="" />
                 </div>
 
-                <p>{{ spot.des }}</p>
+                <p>{{ spot.content }}</p>
               </li>
             </ul>
           </el-tab-pane>

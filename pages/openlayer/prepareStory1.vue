@@ -88,7 +88,7 @@ const locationLayer = new VectorLayer({
   }),
 });
 
-const filteredPoints = ref([]); // 存放篩選後的景點資料
+const bufferSpots = ref([]); // 存放篩選後的景點資料
 
 //點擊地圖後標記
 const clickPointSource = new VectorSource(); // 存放點擊標記
@@ -627,25 +627,36 @@ const fetchTourismData = async () => {
 //  **篩選環域內的景點**
 const filterPOIWithinRange = (lon, lat, radius) => {
   poiSource.clear(); // 清除舊標記
+  bufferSpots.value = [];
   const centerCoords = [lon, lat]; // 原始經緯度
 
   tourismData.value.forEach((spot) => {
     const spotLon = spot.Position.PositionLon;
     const spotLat = spot.Position.PositionLat;
     const distance = getDistance(centerCoords, [spotLon, spotLat]); // 計算距離
-
+    console.log("distance radius)", distance, radius);
+    // 該景點在範圍內
     if (distance <= radius) {
-      // **該景點在範圍內**
-
-      filteredPoints.value.push({
-        ...spot,
-        distance: distance.toFixed(2), // 追加距離資訊（保留 2 位小數）
+      //左側欄位資料
+      bufferSpots.value.push({
+        // ...spot,
+        id: spot.ScenicSpotID,
+        title: spot.ScenicSpotName,
+        images: spot.Picture
+          ? Object.values(spot.Picture).filter(
+              (url) => typeof url === "string" && url.startsWith("http")
+            ) // 確保是圖片 URL
+          : [],
+        content: spot.Description || "無描述",
+        distance: distance.toFixed(2),
       });
 
       const spotCoords = fromLonLat([spotLon, spotLat]);
+
+      //dialog內呈現資料
       const poiFeature = new Feature({
         geometry: new Point(spotCoords),
-        name: spot.ScenicSpotName,
+        title: spot.ScenicSpotName,
         type: "POI", // 標記為 POI，方便判斷
         location: spot.Address || "未知地址",
         // images: spot.Picture.PictureUrl1 ? [spot.Picture.PictureUrl1] : [], // 取得所有圖片
@@ -654,14 +665,13 @@ const filterPOIWithinRange = (lon, lat, radius) => {
               (url) => typeof url === "string" && url.startsWith("http")
             ) // 確保是圖片 URL
           : [],
-        des: spot.Description || "無描述",
-        coords: [spotLon, spotLat], // 經緯度
+        content: spot.Description || "無描述",
+        lonLat: [spotLon, spotLat],
       });
 
       poiSource.addFeature(poiFeature);
     }
   });
-  console.log("filteredPoints", filteredPoints.value);
 };
 
 //****取得目前位置****
@@ -708,10 +718,6 @@ const showCurrentLocation = () => {
 
 //** 點擊任一點 進行打點標記**********
 const handleMapClick = (event) => {
-  //清空畫面
-  clearCircleRange();
-  clearLocation();
-
   if (!mapInstance.value) return;
 
   const clickedCoordinate = event.coordinate; // 取得點擊的地圖座標
@@ -735,6 +741,10 @@ const handleMapClick = (event) => {
     clickIconPosition.value = { x: event.pixel[0], y: event.pixel[1] };
     return;
   }
+
+  //清空畫面(環域景點以外的狀態)
+  clearCircleRange();
+  clearLocation();
 
   if (isRecording.value) {
     // 記錄模式：允許多個標記
@@ -858,7 +868,6 @@ const updatePosition = (spot) => {
 };
 const updateCircleRange = (lon, lat, rad) => {
   console.log("draw", lon, lat, rad);
-
   drawCircleRange(lon, lat, rad);
 };
 const clearMap = () => {
@@ -950,8 +959,8 @@ defineExpose({
       @update-circleRange="updateCircleRange"
       @clear-map="clearMap"
       :mapLocationCoord="mapLocationCoord"
-      :selectSpotName="selectSpotName"
       :selectSpotId="selectSpotId"
+      :bufferSpots="bufferSpots"
     ></PrepareStoryQueryList1>
 
     <div ref="mapContainer" class="map-container"></div>

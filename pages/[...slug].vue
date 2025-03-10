@@ -7,10 +7,11 @@ setResponseStatus(event, 404);
 
 <template>
   <div>
-    404 Not Found 頁面
-    <h1>route.params.slug 取得頁面路徑: {{route.params.slug}}</h1>
+    找不到 頁面
+    <p>route.params:{{ route.params }}</p>
+    <h1>route.params.slug 取得頁面路徑: {{ route.params.slug }}</h1>
     <p>頁面失蹤了</p>
-    <p>你所請求的頁面：{{ route.params.slug.join('/') }}，不存在。</p>
+    <p>你所請求的頁面：{{ route.params.slug.join("/") }}，不存在。</p>
   </div>
 </template>
 

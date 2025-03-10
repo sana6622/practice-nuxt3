@@ -4,7 +4,7 @@ import type { NuxtConfig } from "nuxt/schema";
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
-
+  ssr: true,
   vite: {
     plugins: [],
   },
@@ -57,12 +57,13 @@ export default defineNuxtConfig({
   ],
   css: ["@/assets/all.scss"],
 
-  plugins: [
-    "~/plugins/formatDatePlugin.js",
-    "~/plugins/element-plus.js",
+  plugins: ["~/plugins/formatDatePlugin.js", "~/plugins/element-plus.js"],
 
-  ],
-
+  runtimeConfig: {
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI,
+  },
 
   veeValidate: {
     componentNames: {
@@ -80,3 +81,4 @@ export default defineNuxtConfig({
     };
   };
 });
+console.log("Nuxt 3 Config:", process.env.GOOGLE_REDIRECT_URI);

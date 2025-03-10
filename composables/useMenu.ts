@@ -104,6 +104,18 @@ export const useMenu = () => {
           subTitle: "排序拖曳",
           link: "/action/sortDraggable",
         },
+        {
+          subTitle: "第三方登入",
+          link: "/action/login",
+        },
+        {
+          subTitle: "登入狀態",
+          link: "/action/loginSuccess",
+        },
+        {
+          subTitle: "第三方登出",
+          link: "/action/logout",
+        },
       ],
     },
   ]);

@@ -118,6 +118,10 @@ export const useMenu = () => {
         },
       ],
     },
+    {
+      title: "tensorflow",
+      sub: [{ subTitle: "文字比對(英文)", link: "/tensorflow/USE" }],
+    },
   ]);
   return { menu };
 };

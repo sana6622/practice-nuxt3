@@ -116,11 +116,18 @@ export const useMenu = () => {
           subTitle: "第三方登出",
           link: "/action/logout",
         },
+        {
+          subTitle: "OpenAI",
+          link: "/action/OpenAI",
+        },
       ],
     },
     {
       title: "tensorflow",
-      sub: [{ subTitle: "文字比對(英文)", link: "/tensorflow/USE" }],
+      sub: [
+        { subTitle: "文字比對(英文)", link: "/tensorflow/USE" },
+        { subTitle: "文字問答", link: "/tensorflow/BERT" },
+      ],
     },
   ]);
   return { menu };

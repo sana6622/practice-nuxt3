@@ -73,3 +73,11 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+## 備註
+
+```bash
+tensorflow 分支已實作 OpenAI 與 TensorFlow 文字 QA 功能。
+切換分支：git checkout tensorflow
+```
+

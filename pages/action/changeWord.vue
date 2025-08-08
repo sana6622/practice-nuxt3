@@ -1,5 +1,5 @@
 <script setup>
-const message = ref("abcde123FGHIJ");
+const message = ref('abcde123FGHIJ');
 </script>
 
 <template>
@@ -34,3 +34,4 @@ const message = ref("abcde123FGHIJ");
   }
 }
 </style>
+
